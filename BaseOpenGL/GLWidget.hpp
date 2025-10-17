@@ -5,6 +5,8 @@
 class GLWidget
 {
     GLFWwindow* window{nullptr};
+    virtual void application() = 0;
+    virtual void render_loop() = 0;
 public:
     GLWidget(int width, int height, std::string_view title)
     {
@@ -26,7 +28,6 @@ public:
             glfwTerminate();
         }
         glfwMakeContextCurrent(window);
-        // glfwSetWindowUserPointer(window, this);
         glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
         glfwSetCursorPosCallback(window, mouse_move_callback);
         glfwSetScrollCallback(window, mouse_scroll_callback);
@@ -34,18 +35,18 @@ public:
         {
             std::cout << "Failed to initialize GLAD" << std::endl;
         }
+        CAMERA.init();
+        INPUT.init(width, height);
     }
 
-    virtual void application() = 0;
-    virtual void render() = 0;
-
-    void render_loop()
+    void render()
     {
+        application();
         while (!glfwWindowShouldClose(window))
         {
             keyboard_input_callback(window);
             INPUT.update_time();
-            render();
+            render_loop();
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
@@ -53,6 +54,9 @@ public:
 
     ~GLWidget()
     {
-        glfwTerminate();
+        if (window)
+        {
+            glfwTerminate();
+        }
     }
 };
