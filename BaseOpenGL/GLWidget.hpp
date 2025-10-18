@@ -1,3 +1,10 @@
+/**
+ * @file GLWidget.hpp
+ * @author pnghfng
+ * @brief 封装了一些glad与glfw的初始化操作
+ * @date 2025-10-18
+ * 
+ */
 #pragma once
 #include "Input.hpp"
 #include <mutex>
@@ -5,11 +12,26 @@
 class GLWidget
 {
     GLFWwindow* window{nullptr};
+    /**
+     * @brief 应用程序函数
+     * 
+     */
     virtual void application() = 0;
+    /**
+     * @brief 在渲染循环中执行
+     * 
+     */
     virtual void render_loop() = 0;
+
 protected:
     int _width;
     int _heigth;
+
+    inline glm::mat4 get_perspective()
+    {
+        return glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_heigth, 0.1f, 100.0f);
+    }
+
 public:
     GLWidget(int width, int height, std::string_view title) : _width(width), _heigth(height)
     {

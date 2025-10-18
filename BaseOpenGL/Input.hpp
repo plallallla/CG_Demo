@@ -1,3 +1,10 @@
+/**
+ * @file Input.hpp
+ * @author pnghfng
+ * @brief 处理鼠标键盘等操作
+ * @date 2025-10-18
+ * 
+ */
 #pragma once
 #include "Camera.hpp"
 

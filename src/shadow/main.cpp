@@ -15,8 +15,6 @@
 #include "Texture.hpp"
 
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
 
 #include "GLWidget.hpp"
 
@@ -30,12 +28,17 @@ private:
     unsigned int depthMapFBO;
     glm::vec3 lightPos{-2.0f, 4.0f, -1.0f};
     ShadowScene scene;
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 model = glm::mat4(1.0f);
     unsigned int depthMap;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     virtual void application() override
     {
+
+#ifdef __APPLE__//times 2 for apple retina
+        _width *= 2;
+        _heigth *= 2;
+#endif
+
         glEnable(GL_DEPTH_TEST);
 
         // configure depth map FBO
@@ -88,26 +91,27 @@ private:
         glClear(GL_DEPTH_BUFFER_BIT);
         glActiveTexture(GL_TEXTURE0);
         glCullFace(GL_FRONT);//改变面剔除以解决阴影悬浮问题
-        renderScene(depth_shader);
+        scene.render(depth_shader);
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        glViewport(0, 0, SCR_WIDTH*2, SCR_HEIGHT*2);
+        glViewport(0, 0, _width, _heigth);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         shader.use();
-        // glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_heigth, 0.1f, 100.0f);
         glm::mat4 view = CAMERA.get_view_matrix();
         shader.set_uniform<glm::mat4>("projection", projection);
         shader.set_uniform<glm::mat4>("view", view);
-        // set light uniforms
         shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
         shader.set_uniform<glm::vec3>("lightPos", lightPos);
         shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, depthMap);
+
         scene.render(shader);
     }
 
