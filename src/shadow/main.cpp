@@ -12,6 +12,7 @@
 #include "ShadowScene.hpp"
 
 #include "GLWidget.hpp"
+#include "Texture.hpp"
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -21,8 +22,9 @@ const unsigned int SCR_HEIGHT = 600;
 
 class shadowWidget : public GLWidget
 {
-    int _width;
-    int _heigth;
+public:
+    shadowWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+private:
     ShaderProgram shader;
     ShaderProgram depth_shader;
     unsigned int depthMapFBO;
@@ -30,12 +32,11 @@ class shadowWidget : public GLWidget
     ShadowScene scene;
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     glm::mat4 model = glm::mat4(1.0f);
-    unsigned int woodTexture = loadTexture("../resources/textures/wood.png");
     unsigned int depthMap;
+    unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
-        unsigned int woodTexture = loadTexture("../resources/textures/wood.png");
 
         // configure depth map FBO
         // -----------------------
@@ -109,11 +110,7 @@ class shadowWidget : public GLWidget
         glBindTexture(GL_TEXTURE_2D, depthMap);
         scene.render(shader);
     }
-public:
-    shadowWidget(int width, int height, std::string_view title) : GLWidget(width,height,title), _width(width), _heigth(height)
-    {
 
-    }
 };
 
 int main()

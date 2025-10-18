@@ -8,11 +8,9 @@
 class Mesh
 {
   public:
-    /*  网格数据  */
     Vertexs _vertices;
     std::vector<unsigned int> _indices;
     std::vector<Texture> _textures;
-    /*  函数  */
     Mesh(Vertexs vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
         : _vertices{vertices}, _indices{indices}, _textures{textures}
     {
@@ -28,9 +26,7 @@ class Mesh
     }
 
   private:
-    /*  渲染数据  */
     VertexArray va;
-    /*  函数  */
     void setupMesh()
     {
         va.bind();
@@ -48,7 +44,6 @@ class Mesh
 class Model
 {
   public:
-    /*  函数   */
     Model(std::string path)
     {
         loadModel(path);
@@ -62,11 +57,9 @@ class Model
     }
 
   private:
-    /*  模型数据  */
     std::vector<Mesh> _meshes;
     std::vector<Texture> _loaded_textures;
     std::string _directory;
-    /*  函数   */
     void loadModel(std::string path)
     {
         Assimp::Importer importer;

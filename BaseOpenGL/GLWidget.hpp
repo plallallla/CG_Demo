@@ -7,8 +7,11 @@ class GLWidget
     GLFWwindow* window{nullptr};
     virtual void application() = 0;
     virtual void render_loop() = 0;
+protected:
+    int _width;
+    int _heigth;
 public:
-    GLWidget(int width, int height, std::string_view title)
+    GLWidget(int width, int height, std::string_view title) : _width(width), _heigth(height)
     {
         static std::once_flag gloable_init;
         std::call_once(gloable_init, [&] () 
