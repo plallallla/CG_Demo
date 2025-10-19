@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Camera.hpp"
 #include "ShaderProgram.h"
 #include "ShadowScene.hpp"
 #include "GLWidget.hpp"
@@ -19,14 +20,14 @@ class shadowWidget : public GLWidget
 public:
     shadowWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
 private:
-    ShaderProgram shader;
-    ShaderProgram depth_shader;
+    ShaderProgram shader{"../glsl/shadow/shadow.vs" ,"../glsl/shadow/shadow.fs"};
+    ShaderProgram depth_shader{"../glsl/shadow/depth.vs" ,"../glsl/shadow/depth.fs"};
     glm::vec3 lightPos{-2.0f, 4.0f, -1.0f};
     ShadowScene scene;
     glm::mat4 model = glm::mat4(1.0f);
     FrameBuffer fb{1024,1024};
-    unsigned int _depth_texture;
-    unsigned int _fbo;
+    glm::mat4 lightProjection, lightView;
+    glm::mat4 lightSpaceMatrix;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     virtual void application() override
     {
@@ -35,64 +36,43 @@ private:
         _width *= 2;
         _height *= 2;
 #endif
-
         glEnable(GL_DEPTH_TEST);
 
         fb.create_depth_attachment();
 
-        shader.load_vs_file("../glsl/shadow/shadow.vs");
-        shader.load_fs_file("../glsl/shadow/shadow.fs");
-        shader.link();
+        depth_shader.use();
+        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
+        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+        lightSpaceMatrix = lightProjection * lightView;
+        depth_shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
 
         shader.use();
-        shader.add_sampler("diffuseTexture", 0);
-        shader.add_sampler("shadowMap", 1);
-
-        depth_shader.load_vs_file("../glsl/shadow/depth.vs");
-        depth_shader.load_fs_file("../glsl/shadow/depth.fs");
-        depth_shader.link();
+        shader.add_sampler("diffuseTexture", woodTexture);
+        shader.add_sampler("shadowMap", fb.get_depth_texture());
+        shader.set_uniform<glm::vec3>("lightPos", lightPos);
+        shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
 
     }
 
     virtual void render_loop() override
     {
-        glm::mat4 lightProjection, lightView;
-        glm::mat4 lightSpaceMatrix;
-        float near_plane = 1.0f, far_plane = 7.5f;
-        lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane);
-        lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-        lightSpaceMatrix = lightProjection * lightView;
-
-        depth_shader.use();
-        depth_shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
-        glViewport(0, 0, 1024*2, 1024*2);
-
+        fb.update_viewport();
         glClear(GL_DEPTH_BUFFER_BIT);
-
         fb.bind();
+        depth_shader.use();
         glCullFace(GL_FRONT);//改变面剔除以解决阴影悬浮问题
-        scene.render(depth_shader);
+        scene.render(depth_shader);//pass1 渲染到fbo上
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
         fb.unbind();
 
         glViewport(0, 0, _width, _height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         shader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_height, 0.1f, 100.0f);
-        glm::mat4 view = CAMERA.get_view_matrix();
-        shader.set_uniform<glm::mat4>("projection", projection);
-        shader.set_uniform<glm::mat4>("view", view);
+        shader.set_uniform<glm::mat4>("projection", get_perspective());
+        shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
         shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
-        shader.set_uniform<glm::vec3>("lightPos", lightPos);
-        shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, woodTexture);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, fb.get_depth_texture());
-
-        scene.render(shader);
+        shader.active_samplers();
+        scene.render(shader);//pass2 实际渲染到屏幕上
     }
 
 };

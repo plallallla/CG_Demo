@@ -48,7 +48,7 @@ public:
     // 设置视口为 FBO 尺寸
     void update_viewport() const 
     {
-        glViewport(0, 0, _width, _height);
+        glViewport(0, 0, _width*2, _height*2);
     }
 
     unsigned int get_color_texture() const { return _color_texture; };
