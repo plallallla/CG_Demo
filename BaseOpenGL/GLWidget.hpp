@@ -25,15 +25,15 @@ class GLWidget
 
 protected:
     int _width;
-    int _heigth;
+    int _height;
 
     inline glm::mat4 get_perspective()
     {
-        return glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_heigth, 0.1f, 100.0f);
+        return glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_height, 0.1f, 100.0f);
     }
 
 public:
-    GLWidget(int width, int height, std::string_view title) : _width(width), _heigth(height)
+    GLWidget(int width, int height, std::string_view title) : _width(width), _height(height)
     {
         static std::once_flag gloable_init;
         std::call_once(gloable_init, [&] () 

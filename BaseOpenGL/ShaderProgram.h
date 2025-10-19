@@ -2,7 +2,6 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 using ShaderType = GLenum;
@@ -29,10 +28,13 @@ public:
 
     void link();
     void use() const;
+    void active_samplers() const;
     template<typename T>
     void set_uniform(std::string_view name, const T& value) const;
+    void add_sampler(std::string_view name, const int& id);
     inline GLuint get_id() const { return _id; };
 
 private:
     GLuint _id;
+    std::vector<unsigned int> _samplers;
 };

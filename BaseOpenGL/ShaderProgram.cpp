@@ -43,7 +43,16 @@ void ShaderProgram::link()
 
 void ShaderProgram::use() const
 { 
-    glUseProgram(_id); 
+    glUseProgram(_id);
+}
+
+void ShaderProgram::active_samplers() const
+{
+    for (int i = 0; i < _samplers.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 +i);
+        glBindTexture(GL_TEXTURE_2D, _samplers[i]);
+    }
 }
 
 template<>
@@ -104,4 +113,10 @@ template<>
 void ShaderProgram::set_uniform<glm::mat4>(std::string_view name, const glm::mat4& mat) const
 {
     glUniformMatrix4fv(glGetUniformLocation(_id, name.data()), 1, GL_FALSE, &mat[0][0]);
+}
+
+void ShaderProgram::add_sampler(std::string_view name, const int& id)
+{
+    set_uniform<int>(name, _samplers.size());
+    _samplers.emplace_back(id);
 }

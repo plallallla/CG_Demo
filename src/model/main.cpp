@@ -32,7 +32,7 @@ private:
         glm::mat4 view = glm::mat4(1.0f);
         glm::mat4 projection = glm::mat4(1.0f);
         view = CAMERA.get_view_matrix();
-        projection = glm::perspective(glm::radians(45.0f), (float)_width / (float)_heigth, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(45.0f), (float)_width / (float)_height, 0.1f, 100.0f);
         unsigned int modelLoc = glGetUniformLocation(sp.get_id(), "model");
         unsigned int viewLoc  = glGetUniformLocation(sp.get_id(), "view");
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));

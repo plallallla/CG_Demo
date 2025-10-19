@@ -41,29 +41,6 @@ class TextureManager
     SINGLETON(TextureManager);
     std::unordered_map<std::string, unsigned int> _loaded_textures;
 public:
-    void active(const ShaderProgram& sp, const Textures& _textures)
-    {
-        unsigned int diffuseNr = 1;
-        unsigned int specularNr = 1;
-        for (unsigned int i = 0; i < _textures.size(); i++)
-        {
-            glActiveTexture(GL_TEXTURE0 + i); // 在绑定之前激活相应的纹理单元
-            // 获取纹理序号（diffuse_textureN 中的 N）
-            std::string number;
-            std::string name = _textures[i].type;
-            if (name == "texture_diffuse")
-            {
-                number = std::to_string(diffuseNr++);
-            }
-            else if (name == "texture_specular")
-            {
-                number = std::to_string(specularNr++);
-            }
-            sp.set_uniform<int>(("material." + name + number).c_str(), i);
-            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
-        }
-        glActiveTexture(GL_TEXTURE0);
-    }
     void load_from_material(aiMaterial* material, std::vector<Texture>& textures, std::string_view directory)
     {
         auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);

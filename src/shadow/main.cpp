@@ -8,14 +8,10 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "ShaderProgram.h"
-
 #include "ShadowScene.hpp"
-
 #include "GLWidget.hpp"
 #include "Texture.hpp"
-
-// settings
-
+#include "Frame.hpp"
 #include "GLWidget.hpp"
 
 class shadowWidget : public GLWidget
@@ -25,56 +21,39 @@ public:
 private:
     ShaderProgram shader;
     ShaderProgram depth_shader;
-    unsigned int depthMapFBO;
     glm::vec3 lightPos{-2.0f, 4.0f, -1.0f};
     ShadowScene scene;
     glm::mat4 model = glm::mat4(1.0f);
-    unsigned int depthMap;
+    FrameBuffer fb{1024,1024};
+    unsigned int _depth_texture;
+    unsigned int _fbo;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     virtual void application() override
     {
 
 #ifdef __APPLE__//times 2 for apple retina
         _width *= 2;
-        _heigth *= 2;
+        _height *= 2;
 #endif
 
         glEnable(GL_DEPTH_TEST);
 
-        // configure depth map FBO
-        // -----------------------
-        const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-        glGenFramebuffers(1, &depthMapFBO);
-        // create depth texture
-        glGenTextures(1, &depthMap);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH*2, SHADOW_HEIGHT*2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        // attach depth texture as FBO's depth buffer
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        fb.create_depth_attachment();
 
         shader.load_vs_file("../glsl/shadow/shadow.vs");
         shader.load_fs_file("../glsl/shadow/shadow.fs");
         shader.link();
 
+        shader.use();
+        shader.add_sampler("diffuseTexture", 0);
+        shader.add_sampler("shadowMap", 1);
+
         depth_shader.load_vs_file("../glsl/shadow/depth.vs");
         depth_shader.load_fs_file("../glsl/shadow/depth.fs");
         depth_shader.link();
 
-        depth_shader.use();
-        depth_shader.set_uniform<int>("depthMap", 0);
-
-        shader.use();
-        shader.set_uniform<int>("diffuseTexture", 0);
-        shader.set_uniform<int>("shadowMap", 1);
     }
+
     virtual void render_loop() override
     {
         glm::mat4 lightProjection, lightView;
@@ -84,22 +63,23 @@ private:
         lightView = glm::lookAt(lightPos, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
         lightSpaceMatrix = lightProjection * lightView;
 
-        glViewport(0, 0, 1024*2, 1024*2);
         depth_shader.use();
         depth_shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glViewport(0, 0, 1024*2, 1024*2);
+
         glClear(GL_DEPTH_BUFFER_BIT);
-        glActiveTexture(GL_TEXTURE0);
+
+        fb.bind();
         glCullFace(GL_FRONT);//改变面剔除以解决阴影悬浮问题
         scene.render(depth_shader);
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        fb.unbind();
 
-        glViewport(0, 0, _width, _heigth);
+        glViewport(0, 0, _width, _height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_heigth, 0.1f, 100.0f);
+        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_height, 0.1f, 100.0f);
         glm::mat4 view = CAMERA.get_view_matrix();
         shader.set_uniform<glm::mat4>("projection", projection);
         shader.set_uniform<glm::mat4>("view", view);
@@ -110,7 +90,7 @@ private:
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, depthMap);
+        glBindTexture(GL_TEXTURE_2D, fb.get_depth_texture());
 
         scene.render(shader);
     }
