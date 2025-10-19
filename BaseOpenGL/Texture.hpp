@@ -8,7 +8,6 @@
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
-#include "ShaderProgram.h"
 #include "utility.hpp"
 #include <unordered_map>
 
@@ -41,16 +40,16 @@ class TextureManager
     SINGLETON(TextureManager);
     std::unordered_map<std::string, unsigned int> _loaded_textures;
 public:
-    void load_from_material(aiMaterial* material, std::vector<Texture>& textures, std::string_view directory)
+    void load_from_material(aiMaterial* material, Textures& textures, std::string_view directory)
     {
         auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
         auto specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
         textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
     }
-    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::string_view directory)
+    Textures loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::string_view directory)
     {
-        std::vector<Texture> textures;
+        Textures textures;
         for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
         {
             aiString file_name;

@@ -30,6 +30,7 @@ public:
     void use() const;
     void active_samplers() const;
     void add_sampler(std::string_view sampler_name, const int& texture_id);
+    int get_samplers_ct() const { return (int)_samplers.size(); }
     template<typename T>
     void set_uniform(std::string_view name, const T& value) const;
     inline GLuint get_id() const { return _id; };

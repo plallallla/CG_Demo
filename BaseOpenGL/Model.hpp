@@ -18,7 +18,15 @@ class Mesh
     }
     void Draw(ShaderProgram& shader)
     {
-        TEXTURE_MANAGER.active(shader, _textures);
+        shader.use();
+        int sampler_offset = shader.get_samplers_ct();
+        for (int i = 0; i < _textures.size(); i++)
+        {
+            shader.set_uniform<int>(_textures[i].type, sampler_offset);
+            glActiveTexture(GL_TEXTURE0 + sampler_offset);
+            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
+            sampler_offset++;
+        }
         va.bind();
         glBindVertexArray(va._id);
         glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
