@@ -54,6 +54,8 @@ class LightWidget : public GLWidget
     glm::vec3 _light_color = glm::vec3(1.0f, 1.0f, 1.0f);
     virtual void application() override
     {
+        glEnable(GL_DEPTH_TEST);
+
         VertexBuffer vb;
         vb.set_data(sizeof(vertices), vertices);
         vb.add_layout(GL_FLOAT, 3, true);
@@ -72,11 +74,8 @@ class LightWidget : public GLWidget
         _shader.set_uniform("model", model);
         _shader.set_uniform("view", CAMERA.get_view_matrix());
         _shader.set_uniform("projection", get_perspective());
-        // _shader.set_uniform("light_positon", _light_pos);
-        // _shader.set_uniform("view_positon", CAMERA.get_position());
-        _shader.set_uniform("lightPos", _light_pos);
-        _shader.set_uniform("viewPos", CAMERA.get_position());
-
+        _shader.set_uniform("light_positon", _light_pos);
+        _shader.set_uniform("view_positon", CAMERA.get_position());
 
         glDrawArrays(GL_TRIANGLES, 0, 36);
         _lamp_shader.use();
