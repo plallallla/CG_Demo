@@ -2,6 +2,7 @@
 #include "GLWidget.hpp"
 #include "ShaderProgram.h"
 #include "Vertex.h"
+#include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
 #include <memory>
 
@@ -71,6 +72,7 @@ class LightWidget : public GLWidget
         _va.bind();
         glm::mat4 model(1.0f);
         _shader.use();
+        model = glm::scale(model, {1.0,0.4,0.3});
         _shader.set_uniform("model", model);
         _shader.set_uniform("view", CAMERA.get_view_matrix());
         _shader.set_uniform("projection", get_perspective());
