@@ -21,6 +21,8 @@ private: \
     \
     ~ClassName() = default; \
 
+#include "LogHelper.h"
+
 namespace utility
 {
 
@@ -52,6 +54,7 @@ namespace utility
         {
             glGetShaderInfoLog(id, 1024, NULL, infoLog);
             std::cout << "ERROR::SHADER_COMPILATION_ERROR of type: " << type << "->\n" << infoLog << std::endl;
+            LOG.info("ERROR::SHADER_COMPILATION_ERROR of type: " + type + "->" + infoLog);
             return false;
         }
         return true;

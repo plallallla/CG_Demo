@@ -11,6 +11,7 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glad CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
 
 file(GLOB BASE_SOURCES "BaseOpenGL/*.cpp")
 
@@ -24,7 +25,7 @@ foreach(main_file ${TARGET_SOURCES})
     add_executable(${target_name} ${BASE_SOURCES} ${main_file})
 
     # 配置第三方库
-    target_link_libraries(${target_name} PRIVATE glfw glad::glad assimp::assimp)
+    target_link_libraries(${target_name} PRIVATE glfw glad::glad assimp::assimp spdlog::spdlog_header_only)
     target_include_directories(${target_name} PRIVATE ${Stb_INCLUDE_DIR})
 
 endforeach()
