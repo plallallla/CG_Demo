@@ -1,6 +1,5 @@
 #include "Vertex.h"
 #include "ShaderProgram.h"
-#include "Texture.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 class ShadowScene
@@ -8,7 +7,6 @@ class ShadowScene
     VertexArray plane_va;
     VertexArray cube_va;
     VertexArray quad_va;
-    Texture texture;
     void renderPlane()
     {
         plane_va.bind();
@@ -118,13 +116,9 @@ public:
             quad_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
             glBindVertexArray(0);
         }
-        TextureAttributes att;
-        texture.id = TEXTURE_MANAGER.load_texture("../resource/textures/wood.png", att);
-        texture.type = "texture_diffuse";
     }
     void render(const ShaderProgram &shader)
     {
-        // TEXTURE_MANAGER.active(shader, {texture});
         glm::mat4 model = glm::mat4(1.0f);
         shader.set_uniform<glm::mat4>("model", model);
         // floor

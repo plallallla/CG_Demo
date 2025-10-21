@@ -13,7 +13,7 @@ constexpr float ZOOM = 45.0f;
 class Camera
 {
     SINGLETON(Camera);
-    glm::vec3 _position{0.0f, 0.0f, 5.0f};
+    glm::vec3 _position{0.0f, 0.0f, -1.0f};
     glm::vec3 _front{0.0f, 0.0f, -1.0f};
     glm::vec3 _up{0.0f, 1.0f, 0.0f};
     glm::vec3 _right;
@@ -30,6 +30,7 @@ public:
         update();
     }
     glm::vec3 get_position() const { return _position; }
+    glm::vec3 get_front() const { return _front; }
     float get_zoom() const {return _zoom; }
     void process_keyboard_input(unsigned int key, float delta_time)
     {
