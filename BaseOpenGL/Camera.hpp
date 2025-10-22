@@ -29,6 +29,10 @@ public:
     {
         update();
     }
+    void set_position(glm::vec3 position) 
+    { 
+        _position = position; update(); 
+    } 
     glm::vec3 get_position() const { return _position; }
     glm::vec3 get_front() const { return _front; }
     float get_zoom() const {return _zoom; }

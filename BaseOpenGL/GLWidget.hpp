@@ -27,7 +27,7 @@ protected:
     int _width;
     int _height;
 
-    inline glm::mat4 get_perspective()
+    inline glm::mat4 get_projection()
     {
         return glm::perspective(glm::radians(CAMERA.get_zoom()), (float)_width / (float)_height, 0.1f, 100.0f);
     }
