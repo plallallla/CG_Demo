@@ -67,7 +67,6 @@ class UniformWidget : public GLWidget
 
     unsigned int uboMatrices;
 
-
     VertexArray _va;
     /**
      * @brief 应用程序函数

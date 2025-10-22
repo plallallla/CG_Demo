@@ -116,11 +116,11 @@ private:
     
         single_color.use();
         single_color.set_uniform("view", CAMERA.get_view_matrix());
-        single_color.set_uniform("projection", get_perspective()); 
+        single_color.set_uniform("projection", get_projection()); 
         
         sp.use();
         sp.set_uniform("view", CAMERA.get_view_matrix());
-        sp.set_uniform("projection", get_perspective());
+        sp.set_uniform("projection", get_projection());
 
         glStencilMask(0x00);
         plane_va.bind();

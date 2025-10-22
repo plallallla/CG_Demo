@@ -145,7 +145,7 @@ class LightWidget : public GLWidget
 
         // transform
         _shader.set_uniform("view", CAMERA.get_view_matrix());
-        _shader.set_uniform("projection", get_perspective());
+        _shader.set_uniform("projection", get_projection());
 
         for (unsigned int i = 0; i < 10; i++)
         {
@@ -159,7 +159,7 @@ class LightWidget : public GLWidget
 
         _lamp_shader.use();
         _lamp_shader.set_uniform("view", CAMERA.get_view_matrix());
-        _lamp_shader.set_uniform("projection", get_perspective());
+        _lamp_shader.set_uniform("projection", get_projection());
         for (int i = 0; i < 4; i++)
         {
             glm::mat4 model(1.0f);

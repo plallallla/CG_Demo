@@ -68,7 +68,7 @@ private:
         glViewport(0, 0, _width, _height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
-        shader.set_uniform<glm::mat4>("projection", get_perspective());
+        shader.set_uniform<glm::mat4>("projection", get_projection());
         shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
         shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
         shader.active_samplers();
