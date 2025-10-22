@@ -6,6 +6,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
 #include <memory>
+#include <sstream>
 
 float vertices[] = 
 {
@@ -67,6 +68,14 @@ glm::vec3 cubePositions[] =
     glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+glm::vec3 pointLightPositions[] = 
+{
+    glm::vec3( 0.7f,  0.2f,  2.0f),
+    glm::vec3( 2.3f, -3.3f, -4.0f),
+    glm::vec3(-4.0f,  2.0f, -12.0f),
+    glm::vec3( 0.0f,  0.0f, -3.0f)
+};
+
 class LightWidget : public GLWidget
 {
     ShaderProgram _shader{"../glsl/lighting/lighting.vs" ,"../glsl/lighting/lighting.fs"};
@@ -98,21 +107,45 @@ class LightWidget : public GLWidget
         _va.bind();
         _shader.use();
         _shader.active_samplers();
+        
+        // some info
+        _shader.set_uniform("viewPos", CAMERA.get_position());
+        _shader.set_uniform("material.shininess", 128.f);
+
+        // directional light
+        _shader.set_uniform("dirLight.direction", glm::vec3(-0.2f, -1.0f, -0.3f));
+        _shader.set_uniform("dirLight.ambient", glm::vec3(.05f, .05f, .05f));
+        _shader.set_uniform("dirLight.diffuse", glm::vec3(.4f, .4f, .4f));
+        _shader.set_uniform("dirLight.specular", glm::vec3(.5f, .5f, .5f));
+
+        // point light
+        for (int i = 0; i < 4; i++)
+        {
+            std::string name = "pointLights[" + std::to_string(i) + "]";
+            _shader.set_uniform(name + ".position", pointLightPositions[i]);
+            _shader.set_uniform(name + ".ambient", glm::vec3(0.05f, 0.05f, 0.05f));
+            _shader.set_uniform(name + ".diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
+            _shader.set_uniform(name + ".specular", glm::vec3(1.0f, 1.0f, 1.0f));
+            _shader.set_uniform(name + ".constant", 1.0f);
+            _shader.set_uniform(name + ".linear", 0.09f);
+            _shader.set_uniform(name + ".quadratic", 0.032f);
+        }
+
+        // spot light
+        _shader.set_uniform("spotLight.position", _light_pos);
+        _shader.set_uniform("spotLight.direction", CAMERA.get_front());
+        _shader.set_uniform("spotLight.ambient", glm::vec3(.1f, .1f, .1f));
+        _shader.set_uniform("spotLight.diffuse", glm::vec3(.8f, .8f, .8f));
+        _shader.set_uniform("spotLight.specular", glm::vec3(1.f, 1.f, 1.f));
+        _shader.set_uniform("spotLight.constant", 1.0f);
+        _shader.set_uniform("spotLight.linear", 0.09f);
+        _shader.set_uniform("spotLight.quadratic", 0.032f);
+        _shader.set_uniform("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        _shader.set_uniform("spotLight.outerCutOff", glm::cos(glm::radians(17.5f)));
+
+        // transform
         _shader.set_uniform("view", CAMERA.get_view_matrix());
         _shader.set_uniform("projection", get_perspective());
-        _shader.set_uniform("view_positon", CAMERA.get_position());
-
-        // light attribute
-        _shader.set_uniform("light.position", _light_pos);
-        _shader.set_uniform("light.direction", CAMERA.get_front());
-        _shader.set_uniform("light.ambient", glm::vec3(.1f, .1f, .1f));
-        _shader.set_uniform("light.diffuse", glm::vec3(.8f, .8f, .8f));
-        _shader.set_uniform("light.specular", glm::vec3(1.f, 1.f, 1.f));
-        _shader.set_uniform("light.cutOff",   glm::cos(glm::radians(12.5f)));
-        _shader.set_uniform("light.outerCutOff", glm::cos(glm::radians(20.f)));
-        _shader.set_uniform("light.constant", 1.0f);
-        _shader.set_uniform("light.linear", 0.09f);
-        _shader.set_uniform("light.quadratic", 0.032f);
 
         for (unsigned int i = 0; i < 10; i++)
         {
@@ -125,12 +158,20 @@ class LightWidget : public GLWidget
         }
 
         _lamp_shader.use();
+        _lamp_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _lamp_shader.set_uniform("projection", get_perspective());
+        for (int i = 0; i < 4; i++)
+        {
+            glm::mat4 model(1.0f);
+            model = glm::translate(model, pointLightPositions[i]);
+            model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+            _lamp_shader.set_uniform("model", model);
+            glDrawArrays(GL_TRIANGLES, 0, 36);
+        }
         glm::mat4 model(1.0f);
         model = glm::translate(model, _light_pos);
         model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
         _lamp_shader.set_uniform("model", model);
-        _lamp_shader.set_uniform("view", CAMERA.get_view_matrix());
-        _lamp_shader.set_uniform("projection", get_perspective());
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 public:
