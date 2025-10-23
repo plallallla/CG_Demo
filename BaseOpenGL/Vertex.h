@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 #include <memory>
 #include <glm/glm.hpp>
 #include <glad/glad.h>
@@ -69,6 +70,8 @@ public:
     void setElementBuffer(const void* indices, unsigned int size, unsigned int usage = GL_STATIC_DRAW);
     void addVertexBuffer(const VertexBuffer& vb);
     void addVertexBuffer(const VertexBuffer_p& vb);
+    void setAttributeDivisor(unsigned int index, unsigned int divisor);
+    void setAttributesDivisor(const std::map<unsigned int, unsigned int>& indices_divisors);
     void bind() const;
     void unbind() const;
     void free();

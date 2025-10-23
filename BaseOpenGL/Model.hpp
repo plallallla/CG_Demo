@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <string>
 
 #include "ShaderProgram.h"
@@ -33,8 +34,40 @@ class Mesh
         glBindVertexArray(0);
     }
 
-  private:
+    void draw_instance(ShaderProgram shader, unsigned int instance_id)
+    {
+        shader.use();
+        int sampler_offset = shader.get_samplers_ct();
+        for (int i = 0; i < _textures.size(); i++)
+        {
+            shader.set_uniform<int>(_textures[i].type, sampler_offset);
+            glActiveTexture(GL_TEXTURE0 + sampler_offset);
+            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
+            sampler_offset++;
+        }
+        va.bind();
+        glBindVertexArray(va._id);
+        // glDrawElementsInstanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0, instance_id);
+        glBindVertexArray(0);
+    }
+
+    void add_vertexbuffer(const VertexBuffer& vb)
+    {
+        va.addVertexBuffer(vb);
+    }
+
+    void sets_attribute_divisor(unsigned int att_index, unsigned int divisor)
+    {
+        va.setAttributeDivisor(att_index, divisor);
+    }
+
+    void sets_attributes_divisor(const std::map<unsigned int, unsigned int>& indices_divisors)
+    {
+        va.setAttributesDivisor(indices_divisors);
+    }
+
     VertexArray va;
+  private:
     void setupMesh()
     {
         va.bind();
@@ -52,6 +85,8 @@ class Mesh
 class Model
 {
   public:
+    std::vector<Mesh> _meshes;
+    std::vector<Texture> _loaded_textures;
     Model(std::string path)
     {
         loadModel(path);
@@ -64,9 +99,54 @@ class Model
         }
     }
 
+    void draw_instance(ShaderProgram shader, unsigned int instance_id)
+    {
+        for (unsigned int i = 0; i < _meshes.size(); i++)
+        {
+            _meshes[i].draw_instance(shader, instance_id);
+        }
+    }
+
+    void add_vertexbuffer(size_t index, const VertexBuffer& vb)
+    {
+        _meshes[index].add_vertexbuffer(vb);
+    }
+
+    void add_vertexbuffer(const VertexBuffer& vb)
+    {
+        for (auto& mesh : _meshes)
+        {
+            mesh.add_vertexbuffer(vb);
+        }
+    }
+
+    void sets_attribute_divisor(unsigned int mesh_index, unsigned int att_index, unsigned int divisor)
+    {
+        _meshes[mesh_index].sets_attribute_divisor(att_index, divisor);
+    }
+
+    void sets_attribute_divisor(unsigned int att_index, unsigned int divisor)
+    {
+        for (auto& mesh : _meshes)
+        {
+            mesh.sets_attribute_divisor(att_index, divisor);
+        }
+    }
+
+    void sets_attributes_divisor(unsigned int mesh_index, const std::map<unsigned int, unsigned int>& indices_divisors)
+    {
+        _meshes[mesh_index].sets_attributes_divisor(indices_divisors);
+    }
+
+    void sets_attributes_divisor(const std::map<unsigned int, unsigned int>& indices_divisors)
+    {
+        for (auto& mesh : _meshes)
+        {
+            mesh.sets_attributes_divisor(indices_divisors);
+        }
+    }
+
   private:
-    std::vector<Mesh> _meshes;
-    std::vector<Texture> _loaded_textures;
     std::string _directory;
     void loadModel(std::string path)
     {

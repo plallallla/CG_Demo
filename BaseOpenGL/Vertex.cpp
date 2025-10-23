@@ -101,6 +101,24 @@ void VertexArray::addVertexBuffer(const VertexBuffer_p& vb)
     _vertex_buffers.push_back(vb);
 }
 
+void VertexArray::setAttributeDivisor(unsigned int index, unsigned int divisor)
+{
+    glBindVertexArray(_id);
+    glVertexAttribDivisor(index, divisor);
+    glBindVertexArray(0);
+}
+
+void VertexArray::setAttributesDivisor(const std::map<unsigned int, unsigned int>& indices_divisors)
+{
+    glBindVertexArray(_id);
+    for (const auto& [index, divisor] : indices_divisors)
+    {
+        glVertexAttribDivisor(index, divisor);
+    }
+    glBindVertexArray(0);
+}
+
+
 void VertexArray::bind() const
 {
     glBindVertexArray(_id);
