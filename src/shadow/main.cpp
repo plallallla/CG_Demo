@@ -38,6 +38,8 @@ private:
 #endif
         glEnable(GL_DEPTH_TEST);
 
+        CAMERA.set_position({0,1.,3.});
+
         fb.create_depth_attachment();
 
         depth_shader.use();

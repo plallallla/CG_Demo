@@ -15,6 +15,15 @@ ShaderProgram::ShaderProgram(std::string_view vs, std::string_view fs)
     link();
 }
 
+ShaderProgram::ShaderProgram(std::string_view vs, std::string_view gs, std::string_view fs)
+{
+    _id = glCreateProgram();
+    load_shader_file(GL_VERTEX_SHADER, vs);
+    load_shader_file(GL_GEOMETRY_SHADER, gs);
+    load_shader_file(GL_FRAGMENT_SHADER, fs);
+    link();
+}
+
 ShaderProgram::~ShaderProgram()
 {
     glDeleteProgram(_id);
