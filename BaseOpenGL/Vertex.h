@@ -59,6 +59,7 @@ class VertexArray
 {
 private:
     unsigned int _ebo{0};
+    size_t _attribute_id{0};
     VertexBuffer_ps _vertex_buffers;
 
 public:
@@ -66,6 +67,7 @@ public:
     VertexArray();
 
     void setElementBuffer(const void* indices, unsigned int size, unsigned int usage = GL_STATIC_DRAW);
+    void addVertexBuffer(const VertexBuffer& vb);
     void addVertexBuffer(const VertexBuffer_p& vb);
     void bind() const;
     void unbind() const;

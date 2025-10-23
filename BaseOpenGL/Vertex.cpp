@@ -1,4 +1,5 @@
 #include "Vertex.h"
+#include <memory>
 
 VertexDescription::VertexDescription(VertexType t, unsigned int c, bool n) : _type(t), _count(c), _normalized(n)
 {    
@@ -76,6 +77,11 @@ void VertexArray::setElementBuffer(const void* indices, unsigned int size, unsig
     unbind();
 }
 
+void VertexArray::addVertexBuffer(const VertexBuffer& vb)
+{
+    addVertexBuffer(std::make_shared<VertexBuffer>(vb));
+}
+
 void VertexArray::addVertexBuffer(const VertexBuffer_p& vb)
 {
     bind();
@@ -86,8 +92,10 @@ void VertexArray::addVertexBuffer(const VertexBuffer_p& vb)
     for (int i = 0; i < description.size(); i++)
     {
         const auto& Vertex = description[i];
-        glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i, Vertex._count, Vertex._type, Vertex._normalized, stride, (void*)offset);
+        glEnableVertexAttribArray(_attribute_id);
+        glVertexAttribPointer(_attribute_id++, Vertex._count, Vertex._type, Vertex._normalized, stride, (void*)offset);
+        // glEnableVertexAttribArray(ct++);
+        // glVertexAttribPointer(ct++, Vertex._count, Vertex._type, Vertex._normalized, stride, (void*)offset);
         offset += (size_t)Vertex._count * VertexDescription::type_size(Vertex._type);
     }
     vb->unbind();
