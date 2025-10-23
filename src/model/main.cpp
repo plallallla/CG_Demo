@@ -15,30 +15,34 @@ class MoedlWidget : public GLWidget
 public:
     MoedlWidget(int w, int h, std::string_view title) : GLWidget(w,h,title) {}
 private:
-    ShaderProgram sp;
+    ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
+    ShaderProgram sp2{"../glsl/model/model.vs", "../glsl/model/model.fs"};
     Model ourModel{"../resources/backpack/backpack.obj"};
     virtual void application()
     {
         glEnable(GL_DEPTH_TEST);
-        sp.load_vs_file("../glsl/model/model.vs");
-        sp.load_fs_file("../glsl/model/model.fs");
-        sp.link();
+        CAMERA.set_position({0,0,10});
     }
     virtual void render_loop()
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        sp.use();
+        sp1.use();
         glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
-        glm::mat4 projection = glm::mat4(1.0f);
-        view = CAMERA.get_view_matrix();
-        projection = glm::perspective(glm::radians(45.0f), (float)_width / (float)_height, 0.1f, 100.0f);
-        unsigned int modelLoc = glGetUniformLocation(sp.get_id(), "model");
-        unsigned int viewLoc  = glGetUniformLocation(sp.get_id(), "view");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-        sp.set_uniform<glm::mat4>("projection", projection);
-        ourModel.Draw(sp);
+        sp1.set_uniform("model", model);
+        sp1.set_uniform("view", CAMERA.get_view_matrix());
+        sp1.set_uniform("projection", get_projection());
+        ourModel.Draw(sp1);
+
+        // glUseProgram(0);
+        sp2.use();
+
+        // sp2.use();
+        // glm::mat4 model = glm::mat4(1.0f);
+        // model = glm::translate(model, glm::vec3(0, 2, 0));
+        // sp2.set_uniform("model", model);
+        // sp2.set_uniform("view", CAMERA.get_view_matrix());
+        // sp2.set_uniform("projection", get_projection());
+        // ourModel.Draw(sp2);
     }
 };
 

@@ -17,7 +17,7 @@ class Mesh
     {
         setupMesh();
     }
-    void Draw(ShaderProgram& shader)
+    void Draw(ShaderProgram& shader) const
     {
         shader.use();
         int sampler_offset = shader.get_samplers_ct();
@@ -29,9 +29,8 @@ class Mesh
             sampler_offset++;
         }
         va.bind();
-        glBindVertexArray(va._id);
         glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
+        va.unbind();
     }
 
     void draw_instance(ShaderProgram shader, unsigned int instance_id)
@@ -87,6 +86,7 @@ class Model
   public:
     std::vector<Mesh> _meshes;
     std::vector<Texture> _loaded_textures;
+    Model() = default;
     Model(std::string path)
     {
         loadModel(path);
@@ -97,6 +97,7 @@ class Model
         {
             _meshes[i].Draw(shader);
         }
+
     }
 
     void draw_instance(ShaderProgram shader, unsigned int instance_id)
