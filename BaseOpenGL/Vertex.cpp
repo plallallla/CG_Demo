@@ -94,8 +94,6 @@ void VertexArray::addVertexBuffer(const VertexBuffer_p& vb)
         const auto& Vertex = description[i];
         glEnableVertexAttribArray(_attribute_id);
         glVertexAttribPointer(_attribute_id++, Vertex._count, Vertex._type, Vertex._normalized, stride, (void*)offset);
-        // glEnableVertexAttribArray(ct++);
-        // glVertexAttribPointer(ct++, Vertex._count, Vertex._type, Vertex._normalized, stride, (void*)offset);
         offset += (size_t)Vertex._count * VertexDescription::type_size(Vertex._type);
     }
     vb->unbind();
