@@ -170,9 +170,9 @@ float cube[] = {
 
 
 
-#include "mesh.hpp"
+// #include "mesh.hpp"
 
-// #include "Model.hpp"
+#include "Model.hpp"
 
 
 
@@ -266,7 +266,17 @@ class ModelWidget : public GLWidget
         _back_shader.set_uniform("model", model);
         _back_shader.set_uniform("view", CAMERA.get_view_matrix());
         _back_shader.set_uniform("projection", get_projection());
-        ourModel.Draw(_back_shader);
+        // ourModel.Draw(_back_shader);
+        for (auto& m : ourModel._meshes)
+        {
+            m.Draw(_back_shader);
+            // m.render_elements(_back_shader);
+        }
+
+        for (size_t i = 10; i < 40; i++)
+        {
+            // ourModel._meshes[i].render_elements(_back_shader);
+        }
         // ourModel.Draw(_back_shader);
 
     }
