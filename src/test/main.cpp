@@ -172,6 +172,8 @@ float cube[] = {
 
 #include "mesh.hpp"
 
+// #include "Model.hpp"
+
 
 
 class CubeWidget : public GLWidget
@@ -221,7 +223,6 @@ class CubeWidget : public GLWidget
 
         // _va_cube.bind();
         // _sp_cube.use();
-        glm::mat4 model(1.0);
         // _sp_cube.set_uniform("model", model);
         // _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
         // _sp_cube.set_uniform("projection", get_projection());
@@ -236,20 +237,48 @@ class CubeWidget : public GLWidget
         // _sp_cube.set_uniform("projection", get_projection());
 
         _back_shader.use();
+        glm::mat4 model(1.0);
         _back_shader.set_uniform("model", model);
         _back_shader.set_uniform("view", CAMERA.get_view_matrix());
         _back_shader.set_uniform("projection", get_projection());
-        ourModel.render_elements(_back_shader);
+        // ourModel.render_elements(_back_shader);
 
     }
 public:
     CubeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
 };
 
+class ModelWidget : public GLWidget
+{
+    Model ourModel{"../resources/backpack/backpack.obj"};
+    ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
+
+    virtual void application() override
+    {
+        glEnable(GL_DEPTH_TEST);
+        CAMERA.set_position({0,0,3});
+    }
+    virtual void render_loop() override
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        _back_shader.use();
+        glm::mat4 model(1.0);
+        _back_shader.set_uniform("model", model);
+        _back_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _back_shader.set_uniform("projection", get_projection());
+        ourModel.Draw(_back_shader);
+        // ourModel.Draw(_back_shader);
+
+    }
+public:
+    ModelWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+};
+
+
 int main()
 {
-    CubeWidget wid{800, 600, "test"};
-    // ModelWidget wid{800, 600, "test"};
+    ModelWidget wid{800, 600, "test"};
+    // CubeWidget wid{800, 600, "test"};
     // TWidget wid{800, 600, "test"};
     wid.render();
     return 0;
