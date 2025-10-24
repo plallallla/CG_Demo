@@ -14,14 +14,13 @@ class Mesh
 {
     VertexArray _va;
     Textures _textures;
-    size_t _ct{ 0 };
-
+    GLsizei _ct{ 0 };
 
     void set_up_va(const aiScene* scene, const aiMesh* mesh)
     {
         std::vector<float> vertices;
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) 
-        {
+        std::vector<GLuint> indices;
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             vertices.insert(vertices.end(), 
             {
                 mesh->mVertices[i].x,
@@ -40,10 +39,8 @@ class Mesh
                 vertices.insert(vertices.end(), {0, 0});
             }
         }
-
         auto vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
         _va.attach_vertex_buffer(PNT_LAYOUT, vb_id);
-        std::vector<GLuint> indices;
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) 
         {
             for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++) 
