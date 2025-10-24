@@ -210,7 +210,6 @@ class CubeWidget : public GLWidget
         // cube_lay.add_attribute(GL_FLOAT, 3);
         // _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
 
-
     }
     virtual void render_loop() override
     {
@@ -223,19 +222,24 @@ class CubeWidget : public GLWidget
         // _va_cube.bind();
         // _sp_cube.use();
         glm::mat4 model(1.0);
-        _sp_cube.set_uniform("model", model);
-        _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
-        _sp_cube.set_uniform("projection", get_projection());
+        // _sp_cube.set_uniform("model", model);
+        // _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
+        // _sp_cube.set_uniform("projection", get_projection());
         // glDrawArrays(GL_TRIANGLES, 0, 36);
         // m.render_arrays(_sp_cube);
         // for (size_t i = 0; i < ourModel._meshes.size(); i++) 
         // {
         //     ourModel._meshes[i].render_elements(_sp_cube);
         // }
-        ourModel.render_elements(_sp_cube);
-        // ourModel.render_elements(_back_shader);
+
         
         // _sp_cube.set_uniform("projection", get_projection());
+
+        _back_shader.use();
+        _back_shader.set_uniform("model", model);
+        _back_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _back_shader.set_uniform("projection", get_projection());
+        ourModel.render_elements(_back_shader);
 
     }
 public:

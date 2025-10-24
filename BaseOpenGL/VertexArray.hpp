@@ -56,22 +56,8 @@ class vVertexArray
 {
     GLuint _id{ 0 };
     GLuint _attributes_ct{ 0 };
-
-public:
-    vVertexArray() { glGenVertexArrays(1, &_id); }
-    ~vVertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
-    void bind() const { glBindVertexArray(_id); }
-    void unbind() const { glBindVertexArray(0); }
-    void attach_element_buffer(GLuint buffer_id)
+    void attach_layout(const BufferLayout& layout)
     {
-        glBindVertexArray(_id);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_id);
-        glBindVertexArray(0);
-    }
-    void attach_vertex_buffer(const BufferLayout& layout, GLuint buffer_id)
-    {
-        glBindVertexArray(_id);
-        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
         size_t offset = 0;
         for (size_t i = 0; i < layout._attributes.size(); i++)
         {
@@ -92,6 +78,32 @@ public:
             }
             glEnableVertexAttribArray(_attributes_ct++);
         }
+    }
+
+public:
+    vVertexArray() { glGenVertexArrays(1, &_id); }
+    ~vVertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
+    void bind() const { glBindVertexArray(_id); }
+    void unbind() const { glBindVertexArray(0); }
+    void attach_buffer(const BufferLayout& layout, GLuint b_buffer_id, GLuint e_buffer_id)
+    {
+        glBindVertexArray(_id);
+        glBindBuffer(GL_ARRAY_BUFFER, b_buffer_id);
+        attach_layout(layout);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e_buffer_id);
+        glBindVertexArray(0);
+    }
+    void attach_element_buffer(GLuint buffer_id)
+    {
+        glBindVertexArray(_id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_id);
+        glBindVertexArray(0);
+    }
+    void attach_vertex_buffer(const BufferLayout& layout, GLuint buffer_id)
+    {
+        glBindVertexArray(_id);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        attach_layout(layout);
         glBindVertexArray(0);
     }
 

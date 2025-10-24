@@ -39,8 +39,6 @@ class Mesh
                 vertices.insert(vertices.end(), {0, 0});
             }
         }
-        auto vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
-        _va.attach_vertex_buffer(PNT_LAYOUT, vb_id);
         for (unsigned int i = 0; i < mesh->mNumFaces; i++) 
         {
             for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++) 
@@ -48,8 +46,9 @@ class Mesh
                 indices.push_back(static_cast<GLuint>(mesh->mFaces[i].mIndices[j]));
             }
         }
+        GLuint vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
         GLuint eb_id = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data());
-        _va.attach_element_buffer(eb_id);
+        _va.attach_buffer(PNT_LAYOUT, vb_id, eb_id);
         _ct = static_cast<GLsizei>(indices.size());
     }
 
@@ -79,6 +78,7 @@ public:
         }
         _va.bind();
         glDrawElements(GL_TRIANGLES, _ct, GL_UNSIGNED_INT, 0);
+        std::cout << "ct:" << _ct << std::endl;
         _va.unbind();
     }
 };
@@ -115,6 +115,7 @@ public:
     {
         for (size_t i = 0; i < _meshes.size(); i++)
         {
+            std::cout << i << std::endl;
             _meshes[i].render_elements(sp);
         }
     }
