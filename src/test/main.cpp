@@ -1,3 +1,4 @@
+#include "Camera.hpp"
 #include "GLWidget.hpp"
 #include "ShaderProgram.h"
 #include "VertexArray.hpp"
@@ -57,14 +58,16 @@ class TWidget : public GLWidget
     virtual void application() override
     {
         GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
-        GLuint eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
-        GLuint eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
+        // GLuint eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
+        // GLuint eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
         BufferLayout layout;
         layout.add_attribute(GL_FLOAT, 3);
-        GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
-        GLuint col = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_color), only_color);
-        vao.attach_vertex_buffer(layout, ver);
-        vao.attach_vertex_buffer(layout, col);
+        layout.add_attribute(GL_FLOAT, 3);
+        // GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
+        // GLuint col = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_color), only_color);
+        // vao.attach_vertex_buffer(layout, ver);
+        // vao.attach_vertex_buffer(layout, col);
+        vao.attach_vertex_buffer(layout, VBO);
     }
 
     virtual void render_loop() override
@@ -81,118 +84,140 @@ public:
 
 // #include "Model.hpp"
 
+float cube[] = {
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-float cube[] = 
-{
-        // back face
-        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-         1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-         1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-        -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-        -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-        // front face
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-         1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-         1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-        -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-        -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-        // left face
-        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        // right face
-         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-         1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-         1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-         1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-         1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-        // bottom face
-        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-         1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-         1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-        -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-        // top face
-        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-         1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-         1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-         1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-        -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-        -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-};
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-#include "mesh.hpp"
-class ModelWidget : public GLWidget
-{
-    Model ourModel{"../resources/backpack/backpack.obj"};
-    ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
-    vVertexArray _va;
-    virtual void application() override
-    {
-        glEnable(GL_DEPTH_TEST);
-        CAMERA.set_position({0,0,4});
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-    }
-    virtual void render_loop() override
-    {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        sp1.use();
-        glm::mat4 model = glm::mat4(1.0f);
-        sp1.set_uniform("model", model);
-        sp1.set_uniform("view", CAMERA.get_view_matrix());
-        sp1.set_uniform("projection", get_projection());
-        
-        _va.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-        // ourModel.render_elements(sp1);
-    }
-public:
-    ModelWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
-};
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
 
+float only_vertices_cube[] = {
+        -0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+        -0.5f,  0.5f, -0.5f,  
+        -0.5f, -0.5f, -0.5f,  
+        -0.5f, -0.5f,  0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f,  
+        -0.5f, -0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f, -0.5f,  
+        -0.5f, -0.5f, -0.5f,  
+        -0.5f, -0.5f, -0.5f,  
+        -0.5f, -0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f, -0.5f,  
+         0.5f, -0.5f,  0.5f,  
+         0.5f, -0.5f,  0.5f,  
+        -0.5f, -0.5f,  0.5f,  
+        -0.5f, -0.5f, -0.5f,  
+        -0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f, -0.5f,  
+         0.5f,  0.5f,  0.5f,  
+         0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f,  0.5f,  
+        -0.5f,  0.5f, -0.5f, 
+    };
 
 class CubeWidget : public GLWidget
 {
-    vVertexArray _va;
-    vVertexArray tri;
-    ShaderProgram sp1{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    ShaderProgram sp2{"../glsl/test/triangle.vs", "../glsl/test/test.fs"};
+    vVertexArray _va_tri;
+    ShaderProgram _sp_tri{"../glsl/test/test.vs", "../glsl/test/test.fs"};
+
+    vVertexArray _va_cube;
+    ShaderProgram _sp_cube{"../glsl/test/cube.vs", "../glsl/test/cube.fs"};
+
     virtual void application() override
     {
-        auto id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(cube), cube);
-        auto tri_bo = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(cube), cube);
+        glEnable(GL_DEPTH_TEST);
 
+        CAMERA.set_position({0,0,3});
+
+        auto tri_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
         BufferLayout lay;
-
         lay.add_attribute(GL_FLOAT, 3);
-        tri.attach_vertex_buffer(lay, tri_bo);
-
         lay.add_attribute(GL_FLOAT, 3);
-        lay.add_attribute(GL_FLOAT, 2);
-        _va.attach_vertex_buffer(lay, id);
+        _va_tri.attach_vertex_buffer(lay, tri_vb);
+
+        auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
+        BufferLayout cube_lay;
+        cube_lay.add_attribute(GL_FLOAT, 3);
+        _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
+
+        // auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
+        // BufferLayout cube_lay;
+        // cube_lay.add_attribute(GL_FLOAT, 3);
+        // _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
+
+
     }
     virtual void render_loop() override
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        sp2.use();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // sp1.use();
-        // glm::mat4 model = glm::mat4(1.0f);
-        // sp1.set_uniform("model", model);
-        // sp1.set_uniform("view", CAMERA.get_view_matrix());
-        // sp1.set_uniform("projection", get_projection());
-        // _va.bind();
+        // _va_tri.bind();
+        // _sp_tri.use();
         // glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        _va_cube.bind();
+        _sp_cube.use();
+        glm::mat4 model(1.0);
+        _sp_cube.set_uniform("model", model);
+        _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
+        _sp_cube.set_uniform("projection", get_projection());
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        
+        // _sp_cube.set_uniform("projection", get_projection());
+
     }
 public:
     CubeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
@@ -200,9 +225,9 @@ public:
 
 int main()
 {
-    // CubeWidget wid{800, 600, "test"};
+    CubeWidget wid{800, 600, "test"};
     // ModelWidget wid{800, 600, "test"};
-    TWidget wid{800, 600, "test"};
+    // TWidget wid{800, 600, "test"};
     wid.render();
     return 0;
 }

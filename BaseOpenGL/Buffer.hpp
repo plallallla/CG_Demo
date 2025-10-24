@@ -15,7 +15,7 @@ class Buffer
         glDeleteBuffers(_ids.size(), _ids.data());
     }
 public:
-    GLuint generate_buffer(GLuint target, size_t size, void* data, GLuint usage = GL_STATIC_DRAW)
+    GLuint generate_buffer(GLuint target, GLsizeiptr size, void* data, GLuint usage = GL_STATIC_DRAW)
     {
         glBindVertexArray(0);
         GLuint id;
