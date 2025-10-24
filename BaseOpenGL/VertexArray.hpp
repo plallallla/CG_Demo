@@ -40,6 +40,7 @@ struct BufferLayout
         _attributes.emplace_back(type, count, normalized, instanced, divisor);
         _stride += count * VertexAttribute::get_type_length(type);
     }
+
 };
 
 static inline BufferLayout PNT_LAYOUT = []() 
@@ -51,14 +52,14 @@ static inline BufferLayout PNT_LAYOUT = []()
     return layout;
 }();
 
-class VertexArray
+class vVertexArray
 {
     GLuint _id{ 0 };
     GLuint _attributes_ct{ 0 };
 
 public:
-    VertexArray() { glGenVertexArrays(1, &_id); }
-    ~VertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
+    vVertexArray() { glGenVertexArrays(1, &_id); }
+    ~vVertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
     void bind() const { glBindVertexArray(_id); }
     void unbind() const { glBindVertexArray(0); }
     void attach_element_buffer(GLuint buffer_id)

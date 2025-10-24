@@ -12,7 +12,7 @@
 
 class Mesh
 {
-    VertexArray _va;
+    vVertexArray _va;
     Textures _textures;
     GLsizei _ct{ 0 };
     std::vector<float> vertices;

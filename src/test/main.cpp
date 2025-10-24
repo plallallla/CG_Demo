@@ -52,45 +52,26 @@
 class TWidget : public GLWidget
 {
     ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    VertexArray vao1, vao2;
+    vVertexArray vao;
 
     virtual void application() override
     {
-
-        // GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices), vertices);
         GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
         GLuint eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
         GLuint eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
-
         BufferLayout layout;
         layout.add_attribute(GL_FLOAT, 3);
-        layout.add_attribute(GL_FLOAT, 3);
-        layout.add_attribute(GL_FLOAT, 2);
-        // layout.add_attribute(GL_FLOAT, 3);
-
         GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
         GLuint col = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_color), only_color);
-
-
-        vao1.attach_vertex_buffer(layout, ver);
-        vao1.attach_vertex_buffer(layout, col);
-        // vao1.attach_element_buffer(eb1);
-
-        // vao2.attach_vertex_buffer(layout, VBO);
-        // vao2.attach_element_buffer(eb2);
-
+        vao.attach_vertex_buffer(layout, ver);
+        vao.attach_vertex_buffer(layout, col);
     }
 
     virtual void render_loop() override
     {
         s.use();
-
-        vao1.bind();
+        vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // vao2.bind();
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
-
     }
 public:
     TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
@@ -153,15 +134,11 @@ class ModelWidget : public GLWidget
 {
     Model ourModel{"../resources/backpack/backpack.obj"};
     ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
-    VertexArray _va;
+    vVertexArray _va;
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
         CAMERA.set_position({0,0,4});
-
-        
-
-
 
     }
     virtual void render_loop() override
@@ -185,26 +162,37 @@ public:
 
 class CubeWidget : public GLWidget
 {
-    VertexArray _va;
+    vVertexArray _va;
+    vVertexArray tri;
     ShaderProgram sp1{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    // ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
+    ShaderProgram sp2{"../glsl/test/triangle.vs", "../glsl/test/test.fs"};
     virtual void application() override
     {
-        auto id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
+        auto id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(cube), cube);
+        auto tri_bo = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(cube), cube);
+
         BufferLayout lay;
+
         lay.add_attribute(GL_FLOAT, 3);
+        tri.attach_vertex_buffer(lay, tri_bo);
+
+        lay.add_attribute(GL_FLOAT, 3);
+        lay.add_attribute(GL_FLOAT, 2);
         _va.attach_vertex_buffer(lay, id);
     }
     virtual void render_loop() override
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        sp1.use();
+        sp2.use();
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // sp1.use();
         // glm::mat4 model = glm::mat4(1.0f);
         // sp1.set_uniform("model", model);
         // sp1.set_uniform("view", CAMERA.get_view_matrix());
         // sp1.set_uniform("projection", get_projection());
-        _va.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // _va.bind();
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 public:
     CubeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
