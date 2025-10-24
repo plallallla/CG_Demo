@@ -15,11 +15,11 @@ class Mesh
     VertexArray _va;
     Textures _textures;
     GLsizei _ct{ 0 };
+    std::vector<float> vertices;
+    std::vector<GLuint> indices;
 
     void set_up_va(const aiScene* scene, const aiMesh* mesh)
     {
-        std::vector<float> vertices;
-        std::vector<GLuint> indices;
         for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
             vertices.insert(vertices.end(), 
             {
