@@ -81,6 +81,7 @@ public:
     {
         if (window)
         {
+            LOG.info("glfwTerminate");
             glfwTerminate();
         }
     }
