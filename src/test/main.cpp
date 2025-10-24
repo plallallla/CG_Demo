@@ -3,7 +3,6 @@
 // #include "Vertex.h"
 // #include "Model.hpp"
 
-#include "VertexArray.hpp"
 
     float vertices[] = {
          0.5f,  0.5f, 0.0f,  // top right
@@ -16,53 +15,69 @@
         1, 2, 3   // second Triangle
     };
 
+        unsigned int indices_1[] = {  // note that we start from 0!
+        0, 1, 3,  // first Triangle
+    };
+        unsigned int indices_2[] = {  // note that we start from 0!
+        1, 2, 3   // second Triangle
+    };
+
+
+#include "Buffer.hpp"
+#include "VertexArray.hpp"
+
 class TWidget : public GLWidget
 {
     ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    VertexArray _va;
+
     unsigned int VBO;
-    unsigned int EBO;
+    GLuint va1, va2;
+    GLuint eb1, eb2;
+    // GLuint VAO;
+    // GLuint EBO;
+
+    // VertexArray vao1, vao2;
+
     virtual void application() override
     {
 
-        // unsigned int _ebo;
-        // _va.setElementBuffer(indices, 3);
-        // glGenBuffers(1, &_ebo);
-        // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
-        // glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6, indices, GL_STATIC_DRAW);
+        // BufferLayout layout;
+        // layout.add_attribute(GL_FLOAT, 3);
+        // vao1.attach_vertex_buffer(layout, VBO);
+        // vao1.attach_element_buffer(eb1);
 
-        // glGenVertexArrays(1, &VAO);
-        // VertexBuffer vb;
-        // vb.set_data(sizeof(vertices), vertices);
-        // vb.add_layout(GL_FLOAT, 3, true);
-        // _va.addVertexBuffer(vb);
 
-        // _va.bind();
+        VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices), vertices);
+        eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
+        eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
 
-        _va.bind();
-        BufferLayout layout;
-        layout.add_attribute(GL_FLOAT, 3);
+        glGenVertexArrays(1, &va1);
+        glBindVertexArray(va1);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb1);
+        glBindVertexArray(0);
 
-        _va.attach_buffer(layout, sizeof(vertices), vertices);
-        _va.bind();
-        // glGenBuffers(1, &VBO);
-        // glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-        // glEnableVertexAttribArray(0);
-
-        glGenBuffers(1, &EBO);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+        glGenVertexArrays(1, &va2);
+        glBindVertexArray(va2);
+        glBindBuffer(GL_ARRAY_BUFFER, VBO);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb2);
+        glBindVertexArray(0);
 
     }
 
     virtual void render_loop() override
     {
-        _va.bind();
         s.use();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(va1);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+
+        glBindVertexArray(va2);
+        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
     }
 public:
     TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}

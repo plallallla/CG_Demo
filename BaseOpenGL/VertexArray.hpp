@@ -1,3 +1,4 @@
+#include <OpenGL/gltypes.h>
 #include <cstddef>
 #include <glad/glad.h>
 #include <vector>
@@ -50,6 +51,41 @@ public:
     VertexArray() { glGenVertexArrays(1, &_id); }
     void bind() const { glBindVertexArray(_id); }
     void unbind() const { glBindVertexArray(0); }
+
+    void attach_element_buffer(GLuint buffer_id)
+    {
+        glBindVertexArray(_id);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer_id);
+        glBindVertexArray(0);
+    }
+
+    void attach_vertex_buffer(const BufferLayout& layout, GLuint buffer_id)
+    {
+        glBindVertexArray(_id);
+        glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
+        size_t offset = 0;
+        for (size_t i = 0; i < layout._attributes.size(); i++)
+        {
+            const auto& attribute = layout._attributes[i];
+            glVertexAttribPointer
+            (
+                _attributes_ct, 
+                attribute._count, 
+                attribute._type, 
+                attribute._normalized ? GL_TRUE : GL_FALSE, 
+                layout._stride, 
+                (void*)offset
+            );
+            offset += (size_t)attribute._count * VertexAttribute::get_type_length(attribute._type);
+            if (attribute._instanced) 
+            {
+                glVertexAttribDivisor(_attributes_ct, attribute._divisor);
+            }
+            glEnableVertexAttribArray(_attributes_ct++);
+        }
+        glBindVertexArray(0);
+    }
+
     void attach_buffer(const BufferLayout& layout, GLsizeiptr size, const void *data, GLenum usage = GL_STATIC_DRAW)
     {
         glBindVertexArray(_id);
