@@ -15,10 +15,12 @@ class Mesh
     VertexArray _va;
     Textures _textures;
     size_t _ct{ 0 };
+
+
     void set_up_va(const aiScene* scene, const aiMesh* mesh)
     {
         std::vector<float> vertices;
-        for (int i = 0; i < mesh->mNumVertices; i++)
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++) 
         {
             vertices.insert(vertices.end(), 
             {
@@ -27,31 +29,31 @@ class Mesh
                 mesh->mVertices[i].z,
                 mesh->mNormals[i].x,
                 mesh->mNormals[i].y,
-                mesh->mNormals[i].z,
+                mesh->mNormals[i].z
             });
-            if (mesh->mTextureCoords[0])
+            if (mesh->mTextureCoords[0]) 
             {
                 vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
             }
             else 
             {
-                vertices.insert(vertices.end(), { 0, 0 });
+                vertices.insert(vertices.end(), {0, 0});
             }
         }
+
         auto vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
         _va.attach_vertex_buffer(PNT_LAYOUT, vb_id);
-        std::vector<float> indices;
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        std::vector<GLuint> indices;
+        for (unsigned int i = 0; i < mesh->mNumFaces; i++) 
         {
-            aiFace face = mesh->mFaces[i];
-            for (unsigned int j = 0; j < face.mNumIndices; j++)
+            for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++) 
             {
-                indices.push_back(face.mIndices[j]);
+                indices.push_back(static_cast<GLuint>(mesh->mFaces[i].mIndices[j]));
             }
         }
         GLuint eb_id = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data());
         _va.attach_element_buffer(eb_id);
-        _ct = indices.size();
+        _ct = static_cast<GLsizei>(indices.size());
     }
 
 public:

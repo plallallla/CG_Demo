@@ -1,6 +1,8 @@
 #include "GLWidget.hpp"
 #include "ShaderProgram.h"
 #include <OpenGL/gltypes.h>
+#include <assimp/mesh.h>
+#include <assimp/scene.h>
 
     float vertices[] = {
          0.5f,  0.5f, 0.0f,  // top right
@@ -43,58 +45,59 @@
     };
 
 
-#include "Buffer.hpp"
-#include "VertexArray.hpp"
+// #include "Buffer.hpp"
+// #include "VertexArray.hpp"
 
-class TWidget : public GLWidget
-{
-    ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    VertexArray vao1, vao2;
+// class TWidget : public GLWidget
+// {
+//     ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
+//     VertexArray vao1, vao2;
 
-    virtual void application() override
-    {
+//     virtual void application() override
+//     {
 
-        // GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices), vertices);
-        GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
-        GLuint eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
-        GLuint eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
+//         // GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices), vertices);
+//         GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
+//         GLuint eb1 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_1), indices_1);
+//         GLuint eb2 = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices_2), indices_2);
 
-        BufferLayout layout;
-        layout.add_attribute(GL_FLOAT, 3);
-        layout.add_attribute(GL_FLOAT, 3);
-        layout.add_attribute(GL_FLOAT, 2);
-        // layout.add_attribute(GL_FLOAT, 3);
+//         BufferLayout layout;
+//         layout.add_attribute(GL_FLOAT, 3);
+//         layout.add_attribute(GL_FLOAT, 3);
+//         layout.add_attribute(GL_FLOAT, 2);
+//         // layout.add_attribute(GL_FLOAT, 3);
 
-        GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
-        GLuint col = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_color), only_color);
-
-
-        vao1.attach_vertex_buffer(layout, ver);
-        vao1.attach_vertex_buffer(layout, col);
-        // vao1.attach_element_buffer(eb1);
-
-        // vao2.attach_vertex_buffer(layout, VBO);
-        // vao2.attach_element_buffer(eb2);
-
-    }
-
-    virtual void render_loop() override
-    {
-        s.use();
-
-        vao1.bind();
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        // vao2.bind();
-        // glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    }
-public:
-    TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
-
-};
+//         GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
+//         GLuint col = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_color), only_color);
 
 
+//         vao1.attach_vertex_buffer(layout, ver);
+//         vao1.attach_vertex_buffer(layout, col);
+//         // vao1.attach_element_buffer(eb1);
+
+//         // vao2.attach_vertex_buffer(layout, VBO);
+//         // vao2.attach_element_buffer(eb2);
+
+//     }
+
+//     virtual void render_loop() override
+//     {
+//         s.use();
+
+//         vao1.bind();
+//         glDrawArrays(GL_TRIANGLES, 0, 3);
+
+//         // vao2.bind();
+//         // glDrawArrays(GL_TRIANGLES, 0, 3);
+
+//     }
+// public:
+//     TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+
+// };
+
+
+// #include "Model.hpp"
 #include "mesh.hpp"
 class ModelWidget : public GLWidget
 {
@@ -102,11 +105,13 @@ class ModelWidget : public GLWidget
     ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
     virtual void application() override
     {
+
         glEnable(GL_DEPTH_TEST);
         CAMERA.set_position({0,0,10});
     }
     virtual void render_loop() override
     {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         sp1.use();
         glm::mat4 model = glm::mat4(1.0f);
         sp1.set_uniform("model", model);
