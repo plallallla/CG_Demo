@@ -85,8 +85,10 @@ class Model
 {
   public:
     std::vector<Mesh> _meshes;
-    std::vector<Texture> _loaded_textures;
-    Model() = default;
+    Model()
+    {
+
+    }
     Model(std::string path)
     {
         loadModel(path);

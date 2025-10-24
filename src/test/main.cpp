@@ -1,8 +1,6 @@
 #include "GLWidget.hpp"
 #include "ShaderProgram.h"
 #include <OpenGL/gltypes.h>
-// #include "Vertex.h"
-// #include "Model.hpp"
 
     float vertices[] = {
          0.5f,  0.5f, 0.0f,  // top right
@@ -51,7 +49,7 @@
 class TWidget : public GLWidget
 {
     ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    vVertexArray vao1, vao2;
+    VertexArray vao1, vao2;
 
     virtual void application() override
     {
@@ -63,6 +61,8 @@ class TWidget : public GLWidget
 
         BufferLayout layout;
         layout.add_attribute(GL_FLOAT, 3);
+        layout.add_attribute(GL_FLOAT, 3);
+        layout.add_attribute(GL_FLOAT, 2);
         // layout.add_attribute(GL_FLOAT, 3);
 
         GLuint ver = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices), only_vertices);
@@ -94,9 +94,34 @@ public:
 
 };
 
+
+#include "mesh.hpp"
+class ModelWidget : public GLWidget
+{
+    Model ourModel{"../resources/backpack/backpack.obj"};
+    ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
+    virtual void application() override
+    {
+        glEnable(GL_DEPTH_TEST);
+        CAMERA.set_position({0,0,10});
+    }
+    virtual void render_loop() override
+    {
+        sp1.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        sp1.set_uniform("model", model);
+        sp1.set_uniform("view", CAMERA.get_view_matrix());
+        sp1.set_uniform("projection", get_projection());
+        ourModel.render_elements(sp1);
+    }
+public:
+    ModelWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+};
+
 int main()
 {
-    TWidget wid{800, 600, "test"};
+    ModelWidget wid{800, 600, "test"};
+    // TWidget wid{800, 600, "test"};
     wid.render();
     return 0;
 }
