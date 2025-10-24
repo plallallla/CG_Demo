@@ -5,6 +5,7 @@
 #include <OpenGL/gltypes.h>
 #include <assimp/mesh.h>
 #include <assimp/scene.h>
+#include <cstddef>
 
     float vertices[] = {
          0.5f,  0.5f, 0.0f,  // top right
@@ -128,7 +129,7 @@ float cube[] = {
         -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
     };
 
-float only_vertices_cube[] = {
+    float only_vertices_cube[] = {
         -0.5f, -0.5f, -0.5f,  
          0.5f, -0.5f, -0.5f,  
          0.5f,  0.5f, -0.5f,  
@@ -168,83 +169,10 @@ float only_vertices_cube[] = {
     };
 
 
-class Mesh
-{
-    vVertexArray _va;
-    GLsizei _ct{ 0 };
-    std::vector<float> vertices;
-    std::vector<GLuint> indices;
 
-    void set_up_va(const aiScene* scene, const aiMesh* mesh)
-    {
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-            vertices.insert(vertices.end(), 
-            {
-                mesh->mVertices[i].x,
-                mesh->mVertices[i].y,
-                mesh->mVertices[i].z,
-                mesh->mNormals[i].x,
-                mesh->mNormals[i].y,
-                mesh->mNormals[i].z
-            });
-            if (mesh->mTextureCoords[0]) 
-            {
-                vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
-            }
-            else 
-            {
-                vertices.insert(vertices.end(), {0, 0});
-            }
-        }
-        auto vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
-        _va.attach_vertex_buffer(PNT_LAYOUT, vb_id);
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++) 
-        {
-            for (unsigned int j = 0; j < mesh->mFaces[i].mNumIndices; j++) 
-            {
-                indices.push_back(static_cast<GLuint>(mesh->mFaces[i].mIndices[j]));
-            }
-        }
-        GLuint eb_id = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), indices.data());
-        _va.attach_element_buffer(eb_id);
-        _ct = static_cast<GLsizei>(indices.size());
-    }
+#include "mesh.hpp"
 
-public:
-    Mesh(const aiScene* scene, const aiMesh* mesh, std::string_view directory)
-    {
-        set_up_va(scene, mesh);
-        // if (mesh->mMaterialIndex >= 0)
-        // {
-        //     TEXTURE_MANAGER.load_from_material(scene->mMaterials[mesh->mMaterialIndex], _textures, directory);
-        // }
-    }
-    Mesh()
-    {
-        auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
-        BufferLayout cube_lay;
-        cube_lay.add_attribute(GL_FLOAT, 3);
-        _va.attach_vertex_buffer(cube_lay, cube_vb);
-    }
-    void add_extra_data(BufferLayout layout, GLuint vb)
-    {
-        _va.attach_vertex_buffer(layout, vb);
-    }
-    void render_arrays(const ShaderProgram& sp)
-    {
-        _va.bind();
-        sp.use();
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        _va.unbind();
-    }
-    void render_elements(const ShaderProgram& sp)
-    {
-        sp.use();
-        _va.bind();
-        glDrawElements(GL_TRIANGLES, _ct, GL_UNSIGNED_INT, 0);
-        _va.unbind();
-    }
-};
+
 
 class CubeWidget : public GLWidget
 {
@@ -255,7 +183,10 @@ class CubeWidget : public GLWidget
     ShaderProgram _sp_cube{"../glsl/test/cube.vs", "../glsl/test/cube.fs"};
 
 
-    Mesh m;
+    Model ourModel{"../resources/backpack/backpack.obj"};
+
+    ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
+
 
     virtual void application() override
     {
@@ -296,7 +227,13 @@ class CubeWidget : public GLWidget
         _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
         _sp_cube.set_uniform("projection", get_projection());
         // glDrawArrays(GL_TRIANGLES, 0, 36);
-        m.render_arrays(_sp_cube);
+        // m.render_arrays(_sp_cube);
+        // for (size_t i = 0; i < ourModel._meshes.size(); i++) 
+        // {
+        //     ourModel._meshes[i].render_elements(_sp_cube);
+        // }
+        ourModel.render_elements(_sp_cube);
+        // ourModel.render_elements(_back_shader);
         
         // _sp_cube.set_uniform("projection", get_projection());
 

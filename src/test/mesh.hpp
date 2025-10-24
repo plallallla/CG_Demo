@@ -15,12 +15,12 @@ class Mesh
     vVertexArray _va;
     Textures _textures;
     GLsizei _ct{ 0 };
-    std::vector<float> vertices;
-    std::vector<GLuint> indices;
-
     void set_up_va(const aiScene* scene, const aiMesh* mesh)
     {
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+        std::vector<float> vertices;
+        std::vector<GLuint> indices;
+        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        {
             vertices.insert(vertices.end(), 
             {
                 mesh->mVertices[i].x,
@@ -85,7 +85,6 @@ public:
 
 class Model
 {
-    std::vector<Mesh> _meshes;
     std::string _directory;
     void process_node(aiNode* node, const aiScene* scene)
     {
@@ -99,6 +98,7 @@ class Model
         }
     }
 public:
+    std::vector<Mesh> _meshes;
     Model(std::string_view path)
     {
         Assimp::Importer importer;
@@ -113,7 +113,7 @@ public:
     }
     void render_elements(const ShaderProgram& sp)
     {
-        for (unsigned int i = 0; i < _meshes.size(); i++)
+        for (size_t i = 0; i < _meshes.size(); i++)
         {
             _meshes[i].render_elements(sp);
         }
