@@ -40,7 +40,6 @@ struct BufferLayout
         _attributes.emplace_back(type, count, normalized, instanced, divisor);
         _stride += count * VertexAttribute::get_type_length(type);
     }
-
 };
 
 static inline BufferLayout PNT_LAYOUT = []() 

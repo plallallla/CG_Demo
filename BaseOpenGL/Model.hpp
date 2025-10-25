@@ -66,6 +66,12 @@ class Mesh
             TEXTURE_MANAGER.load_from_material(scene->mMaterials[mesh->mMaterialIndex], _textures, directory);
         }
     }
+
+    void attach_extra_buffer(const BufferLayout& layout, GLuint buffer_id)
+    {
+        _va.attach_vertex_buffer(layout, buffer_id);
+    }
+
     void render_elements(const ShaderProgram& shader) const
     {
         shader.use();
@@ -79,6 +85,22 @@ class Mesh
         }
         _va.bind();
         glDrawElements(GL_TRIANGLES, _elements_ct, GL_UNSIGNED_INT, 0);
+        _va.unbind();
+    }
+
+    void render_elements_instanced(const ShaderProgram& shader, GLsizei instance_count) const
+    {
+        shader.use();
+        int sampler_offset = shader.get_samplers_ct();
+        for (int i = 0; i < _textures.size(); i++)
+        {
+            shader.set_uniform<int>(_textures[i].type, sampler_offset);
+            glActiveTexture(GL_TEXTURE0 + sampler_offset);
+            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
+            sampler_offset++;
+        }
+        _va.bind();
+        glDrawElementsInstanced(GL_TRIANGLES, _elements_ct, GL_UNSIGNED_INT, 0, instance_count);
         _va.unbind();
     }
 };
@@ -113,18 +135,25 @@ class Model
         _directory = path.substr(0, path.find_last_of('/'));
         processNode(scene->mRootNode, scene);
     }
-    // void render_elements(ShaderProgram shader)
-    // {
-    //     for (unsigned int i = 0; i < _meshes.size(); i++)
-    //     {
-    //         _meshes[i].render_elements(shader);
-    //     }
-    // }
+    void attach_extra_buffer(const BufferLayout& layout, GLuint buffer_id)
+    {
+        for (unsigned int i = 0; i < _meshes.size(); i++)
+        {
+            _meshes[i].attach_extra_buffer(layout, buffer_id);
+        }
+    }
     void render_elements(const ShaderProgram& shader)
     {
         for (unsigned int i = 0; i < _meshes.size(); i++)
         {
             _meshes[i].render_elements(shader);
+        }
+    }
+    void render_elements_instanced(const ShaderProgram& shader, GLsizei instance_count) const
+    {
+        for (unsigned int i = 0; i < _meshes.size(); i++)
+        {
+            _meshes[i].render_elements_instanced(shader, instance_count);
         }
     }
 };

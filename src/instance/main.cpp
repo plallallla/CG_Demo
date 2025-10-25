@@ -1,8 +1,9 @@
+#include "Buffer.hpp"
 #include "Camera.hpp"
 #include "GLWidget.hpp"
 #include "Model.hpp"
 #include "ShaderProgram.h"
-#include "Vertex.h"
+#include "VertexArray.hpp"
 #include <cstddef>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/fwd.hpp>
@@ -45,16 +46,17 @@ private:
             0.05f, -0.05f,  0.0f, 1.0f, 0.0f,   
             0.05f,  0.05f,  0.0f, 1.0f, 1.0f                   
         };
-        VertexBuffer quad_vb;
-        quad_vb.set_data(sizeof(quadVertices), quadVertices);
-        quad_vb.add_layout(GL_FLOAT, 2, true);
-        quad_vb.add_layout(GL_FLOAT, 3, true);
-        _quad_va.addVertexBuffer(quad_vb);
-        VertexBuffer index_vb;
-        index_vb.set_data(sizeof(glm::vec2) * 100, &translations);
-        index_vb.add_layout(GL_FLOAT, 2, true);
-        _quad_va.addVertexBuffer(index_vb);
-        _quad_va.setAttributeDivisor(2, 1);
+        auto quad_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices);
+        BufferLayout layout;
+        layout.add_attribute(GL_FLOAT, 2);
+        layout.add_attribute(GL_FLOAT, 3);
+        _quad_va.attach_vertex_buffer(layout, quad_vb);
+
+        auto index_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations);
+        BufferLayout index_layout;
+        index_layout.add_attribute(GL_FLOAT, 2, true, true, 1);
+
+        _quad_va.attach_vertex_buffer(index_layout, index_vb);
     }
     virtual void render_loop() override
     {
@@ -118,14 +120,15 @@ private:
         _instance_shader.use();
         _instance_shader.set_uniform("projection", get_projection());
 
-        VertexBuffer matrices_buffer;
-        matrices_buffer.set_data(amount * sizeof(glm::mat4), modelMatrices.data());
-        matrices_buffer.add_layout(GL_FLOAT, 4, true);
-        matrices_buffer.add_layout(GL_FLOAT, 4, true);
-        matrices_buffer.add_layout(GL_FLOAT, 4, true);
-        matrices_buffer.add_layout(GL_FLOAT, 4, true);
-        _rock.add_vertexbuffer(matrices_buffer);
-        _rock.sets_attributes_divisor({{3, 1},{4, 1},{5, 1},{6, 1}});
+        auto mm_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0]);
+
+        BufferLayout layout;
+        layout.add_attribute(GL_FLOAT, 4, true, true, 1);
+        layout.add_attribute(GL_FLOAT, 4, true, true, 1);
+        layout.add_attribute(GL_FLOAT, 4, true, true, 1);
+        layout.add_attribute(GL_FLOAT, 4, true, true, 1);
+
+        _rock.attach_extra_buffer(layout, mm_id);
     }
 
     virtual void render_loop() override
@@ -140,7 +143,22 @@ private:
         model = glm::translate(model, glm::vec3(0.0f, -3.0f, 0.0f));
         model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
         _shader.set_uniform("model", model);
-        _planet.Draw(_shader);
+        _planet.render_elements(_shader);
+
+
+        _instance_shader.use();
+        _instance_shader.set_uniform("view", CAMERA.get_view_matrix());
+
+
+        _rock.render_elements_instanced(_instance_shader, amount);
+        // 绘制小行星 使用uniform来设置
+        // for(unsigned int i = 0; i < amount; i++)
+        // {
+        //     _shader.set_uniform("model", modelMatrices[i]);
+        //     _rock.render_elements(_shader);
+        // }
+
+
 
         // glUseProgram(0);
 
@@ -158,8 +176,8 @@ private:
 
 int main()
 {
-    InstanceWidget w{ 800, 600, "instance" };
-    // UniverseWidget w{ 800, 600, "universe" };
+    // InstanceWidget w{ 800, 600, "instance" };
+    UniverseWidget w{ 800, 600, "universe" };
     w.render();
     return 0;
 }

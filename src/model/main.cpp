@@ -33,16 +33,16 @@ private:
         sp1.set_uniform("projection", get_projection());
         ourModel.render_elements(sp1);
 
-        // glUseProgram(0);
-        // sp2.use();
+        glUseProgram(0);
+        sp2.use();
 
-        // sp2.use();
+        sp2.use();
         // glm::mat4 model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0, 2, 0));
-        // sp2.set_uniform("model", model);
-        // sp2.set_uniform("view", CAMERA.get_view_matrix());
-        // sp2.set_uniform("projection", get_projection());
-        // ourModel.Draw(sp2);
+        model = glm::translate(model, glm::vec3(0, 2, 0));
+        sp2.set_uniform("model", model);
+        sp2.set_uniform("view", CAMERA.get_view_matrix());
+        sp2.set_uniform("projection", get_projection());
+        ourModel.render_elements(sp2);
     }
 };
 
