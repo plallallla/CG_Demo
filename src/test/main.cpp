@@ -1,6 +1,6 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
-#include "ShaderProgram.h"
+#include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
 #include <OpenGL/gltypes.h>
 #include <assimp/mesh.h>

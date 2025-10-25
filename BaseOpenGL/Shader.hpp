@@ -6,9 +6,6 @@
 #include <string_view>
 #include <unordered_map>
 
-using ShaderType = GLenum;
-using ShaderID = GLuint;
-
 /**
  * @brief 着色器类 封装了部分着色器的操作
  * 
@@ -16,7 +13,7 @@ using ShaderID = GLuint;
 class Shader
 {
 public:
-    explicit Shader(ShaderType type) : _type(type) {};
+    explicit Shader(GLuint type) : _type(type) {};
 
     virtual ~Shader()
     {
@@ -41,15 +38,15 @@ public:
         return 0 == _id;
     };
 
-    inline ShaderID id() const
+    inline GLuint id() const
     {
         return _id;
     };
 
 private:
-    ShaderType _type;
-    ShaderID _id = 0;
-    std::unordered_map<ShaderType, std::string> _name
+    GLuint _type;
+    GLuint _id = 0;
+    std::unordered_map<GLuint, std::string> _name
     {
         {GL_VERTEX_SHADER,"GL_VERTEX_SHADER"},
         {GL_FRAGMENT_SHADER,"GL_FRAGMENT_SHADER"},

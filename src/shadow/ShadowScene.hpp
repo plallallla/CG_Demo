@@ -1,6 +1,9 @@
-#include "Vertex.h"
-#include "ShaderProgram.h"
 #include <glm/gtc/matrix_transform.hpp>
+
+#include "Buffer.hpp"
+#include "VertexArray.hpp"
+#include "ShaderProgram.hpp"
+
 
 class ShadowScene
 {
@@ -19,12 +22,6 @@ class ShadowScene
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
     }
-    void renderQuad()
-    {
-        quad_va.bind();
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        glBindVertexArray(0);
-    }
 public:
     ShadowScene()
     {
@@ -38,12 +35,8 @@ public:
             25.0f, -0.5f, 25.0f, 0.0f,  1.0f,   0.0f,  25.0f,  0.0f, -25.0f, -0.5f, -25.0f, 0.0f,
             1.0f,  0.0f,  0.0f,  25.0f, 25.0f,  -0.5f, -25.0f, 0.0f, 1.0f,   0.0f,  25.0f,  25.0f
             };
-            VertexBuffer vb;
-            vb.set_data(sizeof(planeVertices), planeVertices);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 2, false);
-            plane_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
+            GLuint vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices);
+            plane_va.attach_vertex_buffer(PNT_LAYOUT, vb);
         }
         {
             float vertices[] = 
@@ -91,30 +84,8 @@ public:
                 -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
                 -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
             };
-            VertexBuffer vb;
-            vb.set_data(sizeof(vertices), vertices);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 2, false);
-            cube_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
-            glBindVertexArray(0);
-        }
-        {
-            float quadVertices[] = 
-            {
-                // positions        // texture Coords
-                -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-                -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-                 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
-                 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-            };
-            VertexBuffer vb;
-            vb.set_data(sizeof(quadVertices), quadVertices);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 2, false);
-            quad_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
-            glBindVertexArray(0);
+            GLuint vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices), vertices);
+            cube_va.attach_vertex_buffer(PNT_LAYOUT, vb);
         }
     }
     void render(const ShaderProgram &shader)

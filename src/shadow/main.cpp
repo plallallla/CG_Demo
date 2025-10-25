@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "Camera.hpp"
-#include "ShaderProgram.h"
+#include "ShaderProgram.hpp"
 #include "ShadowScene.hpp"
 #include "GLWidget.hpp"
 #include "Texture.hpp"
