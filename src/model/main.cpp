@@ -31,7 +31,7 @@ private:
         sp1.set_uniform("model", model);
         sp1.set_uniform("view", CAMERA.get_view_matrix());
         sp1.set_uniform("projection", get_projection());
-        ourModel.Draw(sp1);
+        ourModel.render_elements(sp1);
 
         // glUseProgram(0);
         sp2.use();

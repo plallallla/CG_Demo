@@ -170,8 +170,6 @@ float cube[] = {
 
 
 
-#include "mesh.hpp"
-
 #include "Model.hpp"
 
 
@@ -250,8 +248,7 @@ float cube[] = {
 
 class ModelWidget : public GLWidget
 {
-    vModel vourModel{"../resources/backpack/backpack.obj"};
-    Model ourModel{"../resources/backpack/backpack.obj"};
+    Model vourModel{"../resources/backpack/backpack.obj"};
     ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
 
     virtual void application() override
@@ -268,7 +265,7 @@ class ModelWidget : public GLWidget
         _back_shader.set_uniform("view", CAMERA.get_view_matrix());
         _back_shader.set_uniform("projection", get_projection());
         // ourModel.Draw(_back_shader);
-        vourModel.Draw(_back_shader);
+        vourModel.render_elements(_back_shader);
         // for (auto& m : vourModel._meshes)
         // for (auto& m : ourModel._meshes)
         {
