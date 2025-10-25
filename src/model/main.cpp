@@ -34,7 +34,7 @@ private:
         ourModel.render_elements(sp1);
 
         // glUseProgram(0);
-        sp2.use();
+        // sp2.use();
 
         // sp2.use();
         // glm::mat4 model = glm::mat4(1.0f);

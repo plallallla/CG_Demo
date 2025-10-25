@@ -54,7 +54,7 @@
 class TWidget : public GLWidget
 {
     ShaderProgram s{"../glsl/test/test.vs", "../glsl/test/test.fs"};
-    vVertexArray vao;
+    VertexArray vao;
 
     virtual void application() override
     {
@@ -76,6 +76,7 @@ class TWidget : public GLWidget
         s.use();
         vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, 3);
+        glUseProgram(0);
     }
 public:
     TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
@@ -174,81 +175,84 @@ float cube[] = {
 
 
 
-// class CubeWidget : public GLWidget
-// {
-//     vVertexArray _va_tri;
-//     ShaderProgram _sp_tri{"../glsl/test/test.vs", "../glsl/test/test.fs"};
+class CubeWidget : public GLWidget
+{
+    VertexArray _va_tri;
+    ShaderProgram _sp_tri{"../glsl/test/test.vs", "../glsl/test/test.fs"};
 
-//     vVertexArray _va_cube;
-//     ShaderProgram _sp_cube{"../glsl/test/cube.vs", "../glsl/test/cube.fs"};
-
-
-//     Model ourModel{"../resources/backpack/backpack.obj"};
-
-//     ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
+    VertexArray _va_cube;
+    ShaderProgram _sp_cube{"../glsl/test/cube.vs", "../glsl/test/cube.fs"};
 
 
-//     virtual void application() override
-//     {
-//         glEnable(GL_DEPTH_TEST);
+    Model ourModel{"../resources/backpack/backpack.obj"};
 
-//         CAMERA.set_position({0,0,3});
+    ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
 
-//         auto tri_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
-//         BufferLayout lay;
-//         lay.add_attribute(GL_FLOAT, 3);
-//         lay.add_attribute(GL_FLOAT, 3);
-//         _va_tri.attach_vertex_buffer(lay, tri_vb);
 
-//         auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
-//         BufferLayout cube_lay;
-//         cube_lay.add_attribute(GL_FLOAT, 3);
-//         _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
+    virtual void application() override
+    {
+        glEnable(GL_DEPTH_TEST);
 
-//         // auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
-//         // BufferLayout cube_lay;
-//         // cube_lay.add_attribute(GL_FLOAT, 3);
-//         // _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
+        CAMERA.set_position({0,0,3});
 
-//     }
-//     virtual void render_loop() override
-//     {
-//         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        auto tri_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
+        BufferLayout lay;
+        lay.add_attribute(GL_FLOAT, 3);
+        lay.add_attribute(GL_FLOAT, 3);
+        _va_tri.attach_vertex_buffer(lay, tri_vb);
 
-//         // _va_tri.bind();
-//         // _sp_tri.use();
-//         // glDrawArrays(GL_TRIANGLES, 0, 3);
+        auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
+        BufferLayout cube_lay;
+        cube_lay.add_attribute(GL_FLOAT, 3);
+        _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
 
-//         // _va_cube.bind();
-//         // _sp_cube.use();
-//         // _sp_cube.set_uniform("model", model);
-//         // _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
-//         // _sp_cube.set_uniform("projection", get_projection());
-//         // glDrawArrays(GL_TRIANGLES, 0, 36);
-//         // m.render_arrays(_sp_cube);
-//         // for (size_t i = 0; i < ourModel._meshes.size(); i++) 
-//         // {
-//         //     ourModel._meshes[i].render_elements(_sp_cube);
-//         // }
+        // auto cube_vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(only_vertices_cube), only_vertices_cube);
+        // BufferLayout cube_lay;
+        // cube_lay.add_attribute(GL_FLOAT, 3);
+        // _va_cube.attach_vertex_buffer(cube_lay, cube_vb);
+
+    }
+    virtual void render_loop() override
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // _va_tri.bind();
+        // _sp_tri.use();
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        // _va_cube.bind();
+        // _sp_cube.use();
+        // _sp_cube.set_uniform("model", model);
+        // _sp_cube.set_uniform("view", CAMERA.get_view_matrix());
+        // _sp_cube.set_uniform("projection", get_projection());
+        // glDrawArrays(GL_TRIANGLES, 0, 36);
+        // m.render_arrays(_sp_cube);
+        // for (size_t i = 0; i < ourModel._meshes.size(); i++) 
+        // {
+        //     ourModel._meshes[i].render_elements(_sp_cube);
+        // }
 
         
-//         // _sp_cube.set_uniform("projection", get_projection());
+        // _sp_cube.set_uniform("projection", get_projection());
 
-//         _back_shader.use();
-//         glm::mat4 model(1.0);
-//         _back_shader.set_uniform("model", model);
-//         _back_shader.set_uniform("view", CAMERA.get_view_matrix());
-//         _back_shader.set_uniform("projection", get_projection());
-//         // ourModel.render_elements(_back_shader);
+        _back_shader.use();
+        glm::mat4 model(1.0);
+        _back_shader.set_uniform("model", model);
+        _back_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _back_shader.set_uniform("projection", get_projection());
+        // ourModel.render_elements(_back_shader);
 
-//     }
-// public:
-//     CubeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
-// };
+    }
+public:
+    CubeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+};
+
+// #include "glModel.hpp"
 
 class ModelWidget : public GLWidget
 {
     Model vourModel{"../resources/backpack/backpack.obj"};
+    // glModel vourModel{"../resources/backpack/backpack.obj"};
     ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
 
     virtual void application() override
@@ -264,21 +268,26 @@ class ModelWidget : public GLWidget
         _back_shader.set_uniform("model", model);
         _back_shader.set_uniform("view", CAMERA.get_view_matrix());
         _back_shader.set_uniform("projection", get_projection());
-        // ourModel.Draw(_back_shader);
+
+        // for (unsigned int i = 0; i < vourModel._meshes.size(); i++)
+        // {
+        //     auto& m = vourModel._meshes[i];
+        //     int sampler_offset = _back_shader.get_samplers_ct();
+        //     for (int i = 0; i < m._textures.size(); i++)
+        //     {
+        //         _back_shader.set_uniform<int>(m._textures[i].type, sampler_offset);
+        //         glActiveTexture(GL_TEXTURE0 + sampler_offset);
+        //         glBindTexture(GL_TEXTURE_2D, m._textures[i].id);
+        //         sampler_offset++;
+        //     }
+        //     m._va.bind();
+        //     glDrawElements(GL_TRIANGLES, m._elements_ct, GL_UNSIGNED_INT, 0);
+        //     m._va.unbind();
+        // }
+
         vourModel.render_elements(_back_shader);
-        // for (auto& m : vourModel._meshes)
-        // for (auto& m : ourModel._meshes)
-        {
-            // m.Draw(_back_shader);
-            // m.render_elements(_back_shader);
-        }
 
-        for (size_t i = 10; i < 40; i++)
-        {
-            // ourModel._meshes[i].render_elements(_back_shader);
-        }
-        // ourModel.Draw(_back_shader);
-
+        glUseProgram(0);
     }
 public:
     ModelWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}

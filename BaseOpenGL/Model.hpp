@@ -12,6 +12,7 @@
 
 class Mesh
 {
+  public:
     VertexArray _va;
     size_t _elements_ct;
     std::vector<Texture> _textures;
@@ -65,7 +66,7 @@ class Mesh
             TEXTURE_MANAGER.load_from_material(scene->mMaterials[mesh->mMaterialIndex], _textures, directory);
         }
     }
-    void render_elements(ShaderProgram& shader) const
+    void render_elements(const ShaderProgram& shader) const
     {
         shader.use();
         int sampler_offset = shader.get_samplers_ct();
@@ -84,7 +85,6 @@ class Mesh
 
 class Model
 {
-    std::vector<Mesh> _meshes;
     std::string _directory;
     void processNode(aiNode* node, const aiScene* scene)
     {
@@ -100,6 +100,7 @@ class Model
     }
 
   public:
+    std::vector<Mesh> _meshes;
     Model(std::string path)
     {
         Assimp::Importer importer;
@@ -112,7 +113,14 @@ class Model
         _directory = path.substr(0, path.find_last_of('/'));
         processNode(scene->mRootNode, scene);
     }
-    void render_elements(ShaderProgram shader)
+    // void render_elements(ShaderProgram shader)
+    // {
+    //     for (unsigned int i = 0; i < _meshes.size(); i++)
+    //     {
+    //         _meshes[i].render_elements(shader);
+    //     }
+    // }
+    void render_elements(const ShaderProgram& shader)
     {
         for (unsigned int i = 0; i < _meshes.size(); i++)
         {
