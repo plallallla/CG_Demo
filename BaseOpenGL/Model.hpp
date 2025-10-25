@@ -12,10 +12,17 @@
 
 class Mesh
 {
-    vVertexArray _va;
+    VertexArray _va;
     size_t _elements_ct;
     std::vector<Texture> _textures;
   public:
+    Mesh(Mesh&& other) noexcept
+    {
+        _va = other._va;
+        other._va._id = 0;
+        _elements_ct = other._elements_ct;
+        _textures = other._textures;
+    }
     Mesh(aiMesh* mesh, const aiScene* scene, std::string_view directory)
     {
 

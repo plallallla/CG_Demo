@@ -52,8 +52,9 @@ static inline BufferLayout PNT_LAYOUT = []()
     return layout;
 }();
 
-class vVertexArray
+class VertexArray
 {
+    friend class Mesh;
     GLuint _id{ 0 };
     GLuint _attributes_ct{ 0 };
     void attach_layout(const BufferLayout& layout)
@@ -81,21 +82,15 @@ class vVertexArray
     }
 
 public:
-    vVertexArray() { glGenVertexArrays(1, &_id); }
-    // ~vVertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
+    VertexArray() { glGenVertexArrays(1, &_id); }
+    ~VertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
     void bind() const { glBindVertexArray(_id); }
     void unbind() const { glBindVertexArray(0); }
     void attach_buffer(const BufferLayout& layout, GLuint b_buffer_id, GLuint e_buffer_id)
     {
         glBindVertexArray(_id);
         glBindBuffer(GL_ARRAY_BUFFER, b_buffer_id);
-        // attach_layout(layout);
-        glEnableVertexAttribArray(0);	
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, (void*)0);
-        glEnableVertexAttribArray(1);	
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, (void*)12);
-        glEnableVertexAttribArray(2);	
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, (void*)24);
+        attach_layout(layout);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, e_buffer_id);
         glBindVertexArray(0);
     }
@@ -112,5 +107,4 @@ public:
         attach_layout(layout);
         glBindVertexArray(0);
     }
-
 };
