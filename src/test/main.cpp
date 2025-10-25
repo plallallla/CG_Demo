@@ -269,7 +269,7 @@ class ModelWidget : public GLWidget
         _back_shader.set_uniform("projection", get_projection());
         // ourModel.Draw(_back_shader);
         vourModel.Draw(_back_shader);
-        for (auto& m : vourModel._meshes)
+        // for (auto& m : vourModel._meshes)
         // for (auto& m : ourModel._meshes)
         {
             // m.Draw(_back_shader);
