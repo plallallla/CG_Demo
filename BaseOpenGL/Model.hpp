@@ -6,6 +6,9 @@
 #include "Texture.hpp"
 #include "Vertex.h"
 
+#include "VertexArray.hpp"
+#include "Buffer.hpp"
+
 class Mesh
 {
   public:
@@ -28,56 +31,54 @@ class Mesh
             glBindTexture(GL_TEXTURE_2D, _textures[i].id);
             sampler_offset++;
         }
-        va.bind();
+        // vva.bind();
+        glBindVertexArray(vao);
+        // glDrawElements(GL_TRIANGLES, _ct, GL_UNSIGNED_INT, 0);
         glDrawElements(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0);
-        va.unbind();
+        vva.unbind();
     }
-
-    void draw_instance(ShaderProgram shader, unsigned int instance_id)
-    {
-        shader.use();
-        int sampler_offset = shader.get_samplers_ct();
-        for (int i = 0; i < _textures.size(); i++)
-        {
-            shader.set_uniform<int>(_textures[i].type, sampler_offset);
-            glActiveTexture(GL_TEXTURE0 + sampler_offset);
-            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
-            sampler_offset++;
-        }
-        va.bind();
-        glBindVertexArray(va._id);
-        // glDrawElementsInstanced(GL_TRIANGLES, _indices.size(), GL_UNSIGNED_INT, 0, instance_id);
-        glBindVertexArray(0);
-    }
-
-    void add_vertexbuffer(const VertexBuffer& vb)
-    {
-        va.addVertexBuffer(vb);
-    }
-
-    void sets_attribute_divisor(unsigned int att_index, unsigned int divisor)
-    {
-        va.setAttributeDivisor(att_index, divisor);
-    }
-
-    void sets_attributes_divisor(const std::map<unsigned int, unsigned int>& indices_divisors)
-    {
-        va.setAttributesDivisor(indices_divisors);
-    }
-
+    vVertexArray vva;
     VertexArray va;
+    size_t _ct;
+    GLuint vao;
   private:
     void setupMesh()
     {
-        va.bind();
-        VertexBuffer vb;
-        vb.set_data(_vertices.size() * sizeof(Vertex), _vertices.data());
-        vb.add_layout(GL_FLOAT, 3, GL_FALSE);
-        vb.add_layout(GL_FLOAT, 3, GL_FALSE);
-        vb.add_layout(GL_FLOAT, 2, GL_FALSE);
-        va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
-        va.setElementBuffer(_indices.data(), _indices.size() * sizeof(unsigned int));
-        va.unbind();
+        // va.bind();
+        // VertexBuffer vb;
+        // vb.set_data(_vertices.size() * sizeof(Vertex), _vertices.data());
+        // vb.add_layout(GL_FLOAT, 3, GL_FALSE);
+        // vb.add_layout(GL_FLOAT, 3, GL_FALSE);
+        // vb.add_layout(GL_FLOAT, 2, GL_FALSE);
+        // va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
+        // va.setElementBuffer(_indices.data(), _indices.size() * sizeof(unsigned int));
+        // va.unbind();
+
+
+        // GLuint vb_id = BUFFER.generate_buffer(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex), _vertices.data());
+        // GLuint eb_id = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data());
+        // vva.attach_buffer(PNT_LAYOUT, vb_id, eb_id);
+        // _ct = static_cast<GLsizei>(_indices.size());
+
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+        GLuint vb;
+        glGenBuffers(1, &vb);
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        glBufferData(GL_ARRAY_BUFFER, _vertices.size() * sizeof(Vertex), _vertices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, vb);
+        glEnableVertexAttribArray(0);	
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
+        glEnableVertexAttribArray(1);	
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+        glEnableVertexAttribArray(2);	
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
+        GLuint eb;
+        glGenBuffers(1, &eb);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, _indices.size() * sizeof(unsigned int), _indices.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eb);
+        glBindVertexArray(0);
     }
 };
 
@@ -102,52 +103,7 @@ class Model
 
     }
 
-    void draw_instance(ShaderProgram shader, unsigned int instance_id)
-    {
-        for (unsigned int i = 0; i < _meshes.size(); i++)
-        {
-            _meshes[i].draw_instance(shader, instance_id);
-        }
-    }
 
-    void add_vertexbuffer(size_t index, const VertexBuffer& vb)
-    {
-        _meshes[index].add_vertexbuffer(vb);
-    }
-
-    void add_vertexbuffer(const VertexBuffer& vb)
-    {
-        for (auto& mesh : _meshes)
-        {
-            mesh.add_vertexbuffer(vb);
-        }
-    }
-
-    void sets_attribute_divisor(unsigned int mesh_index, unsigned int att_index, unsigned int divisor)
-    {
-        _meshes[mesh_index].sets_attribute_divisor(att_index, divisor);
-    }
-
-    void sets_attribute_divisor(unsigned int att_index, unsigned int divisor)
-    {
-        for (auto& mesh : _meshes)
-        {
-            mesh.sets_attribute_divisor(att_index, divisor);
-        }
-    }
-
-    void sets_attributes_divisor(unsigned int mesh_index, const std::map<unsigned int, unsigned int>& indices_divisors)
-    {
-        _meshes[mesh_index].sets_attributes_divisor(indices_divisors);
-    }
-
-    void sets_attributes_divisor(const std::map<unsigned int, unsigned int>& indices_divisors)
-    {
-        for (auto& mesh : _meshes)
-        {
-            mesh.sets_attributes_divisor(indices_divisors);
-        }
-    }
 
   private:
     std::string _directory;
