@@ -2,12 +2,10 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
 #include "Model.hpp"
-#include "ShaderProgram.h"
 #include "VertexArray.hpp"
 #include <cstddef>
 #include <glm/ext/vector_float2.hpp>
 #include <glm/fwd.hpp>
-#include <map>
 
 class InstanceWidget : public GLWidget
 {
@@ -105,7 +103,7 @@ public:
 private:
     ShaderProgram _shader{"../glsl/instance/universe.vs", "../glsl/instance/universe.fs"};
     ShaderProgram _instance_shader{"../glsl/instance/universe_instance.vs", "../glsl/instance/universe.fs"};
-    unsigned int amount = 10000;
+    unsigned int amount = 100000;
     std::vector<glm::mat4> modelMatrices;
 
     Model _planet{"../resources/planet/planet.obj"};
@@ -145,31 +143,17 @@ private:
         _shader.set_uniform("model", model);
         _planet.render_elements(_shader);
 
-
-        _instance_shader.use();
-        _instance_shader.set_uniform("view", CAMERA.get_view_matrix());
-
-
-        _rock.render_elements_instanced(_instance_shader, amount);
-        // 绘制小行星 使用uniform来设置
+        // 绘制小行星 使用uniform来设置model
         // for(unsigned int i = 0; i < amount; i++)
         // {
         //     _shader.set_uniform("model", modelMatrices[i]);
         //     _rock.render_elements(_shader);
         // }
 
-
-
-        // glUseProgram(0);
-
-        // _instance_shader.use();
-        // _instance_shader.set_uniform("view", CAMERA.get_view_matrix());
-
-        // draw meteorites
-        // for (unsigned int i = 0; i < amount; i++)
-        // {
-            // _rock.draw_instance(_instance_shader, i);
-        // }
+        // 绘制小行星 使用instance来设置model
+        _instance_shader.use();
+        _instance_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _rock.render_elements_instanced(_instance_shader, amount);
 
     }
 };
