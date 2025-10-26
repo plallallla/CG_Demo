@@ -33,12 +33,12 @@ public:
     {
         auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        auto specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
-        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        auto normalMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_normal", directory);
-        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-        auto heightMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_height", directory);
-        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+        // auto specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
+        // textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        // auto normalMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_normal", directory);
+        // textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        // auto heightMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_height", directory);
+        // textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
     Textures loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::string_view directory)
     {
@@ -105,10 +105,7 @@ public:
             GL_UNSIGNED_BYTE, 
             data
         );
-        if (attributes._need_mipmap) 
-        {
-            glGenerateMipmap(attributes._target);
-        }
+        if (attributes._need_mipmap) glGenerateMipmap(attributes._target);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
         glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
@@ -131,7 +128,7 @@ public:
         unsigned char* data = stbi_load(path.data(), &width, &height, &nrComponents, 0);
         if (!data)
         {
-            LOG.info("Texture load error : " + path.data());
+            LOG.info(std::string{"Texture load error : "} + path.data());
             stbi_image_free(data);
             return 0;
         }
@@ -147,16 +144,14 @@ public:
             GL_UNSIGNED_BYTE, 
             data
         );
-        if (attributes._need_mipmap) 
-        {
-            glGenerateMipmap(attributes._target);
-        }
+        if (attributes._need_mipmap) glGenerateMipmap(attributes._target);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
         glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
         glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._max_filtering);
         glBindTexture(attributes._target, textureID);
         _loaded_textures[path.data()] = textureID;
+        stbi_image_free(data);
         return textureID;
     }
 };

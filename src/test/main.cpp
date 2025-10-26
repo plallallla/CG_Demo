@@ -252,13 +252,14 @@ public:
 class ModelWidget : public GLWidget
 {
     Model vourModel{"../resources/backpack/backpack.obj"};
-    Model cyborg{"../resources/cyborg/cyborg.obj"};
+    // Model cyborg{"../resources/cyborg/cyborg.obj"};
     ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
 
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
         CAMERA.set_position({0,0,3});
+        unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     }
     virtual void render_loop() override
     {
@@ -286,7 +287,7 @@ class ModelWidget : public GLWidget
         // }
 
         // vourModel.render_elements(_back_shader);
-        cyborg.render_elements(_back_shader);
+        // cyborg.render_elements(_back_shader);
 
         glUseProgram(0);
     }
