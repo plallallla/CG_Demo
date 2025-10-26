@@ -25,7 +25,7 @@ public:
         // vertices
         std::vector<float> vertices;
         bool has_tangent = mesh->mTangents && mesh->mBitangents;
-        int vertex_rank = has_tangent ? 8 : 14;
+        int vertex_rank = has_tangent ? 14 : 8;
         vertices.reserve(mesh->mNumVertices * vertex_rank);
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {

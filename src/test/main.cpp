@@ -252,7 +252,7 @@ public:
 class ModelWidget : public GLWidget
 {
     Model vourModel{"../resources/backpack/backpack.obj"};
-    // glModel vourModel{"../resources/backpack/backpack.obj"};
+    Model cyborg{"../resources/cyborg/cyborg.obj"};
     ShaderProgram _back_shader{"../glsl/test/backup.vs", "../glsl/test/backup.fs"};
 
     virtual void application() override
@@ -285,7 +285,8 @@ class ModelWidget : public GLWidget
         //     m._va.unbind();
         // }
 
-        vourModel.render_elements(_back_shader);
+        // vourModel.render_elements(_back_shader);
+        cyborg.render_elements(_back_shader);
 
         glUseProgram(0);
     }

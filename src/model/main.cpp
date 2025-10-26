@@ -18,6 +18,7 @@ private:
     ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
     ShaderProgram sp2{"../glsl/model/model.vs", "../glsl/model/model.fs"};
     Model ourModel{"../resources/backpack/backpack.obj"};
+    Model cyborg{"../resources/cyborg/cyborg.obj"};
     virtual void application()
     {
         glEnable(GL_DEPTH_TEST);
@@ -32,17 +33,18 @@ private:
         sp1.set_uniform("view", CAMERA.get_view_matrix());
         sp1.set_uniform("projection", get_projection());
         ourModel.render_elements(sp1);
+        // cyborg.render_elements(sp1);
 
         glUseProgram(0);
         sp2.use();
 
-        sp2.use();
+        // sp2.use();
         // glm::mat4 model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0, 2, 0));
         sp2.set_uniform("model", model);
         sp2.set_uniform("view", CAMERA.get_view_matrix());
         sp2.set_uniform("projection", get_projection());
-        ourModel.render_elements(sp2);
+        // ourModel.render_elements(sp2);
     }
 };
 
