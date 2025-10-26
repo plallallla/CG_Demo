@@ -11,34 +11,36 @@
 
 class Mesh
 {
-  public:
     VertexArray _va;
     size_t _elements_ct;
     std::vector<Texture> _textures;
-  public:
-    Mesh(Mesh&& other) noexcept
+public:
+    Mesh(Mesh&& other) noexcept : _va{other._va}, _elements_ct{other._elements_ct}, _textures{other._textures}
     {
-        _va = other._va;
         other._va._id = 0;
-        _elements_ct = other._elements_ct;
-        _textures = other._textures;
     }
+
     Mesh(aiMesh* mesh, const aiScene* scene, std::string_view directory)
     {
-
+        // vertices
         std::vector<float> vertices;
-        std::vector<unsigned int> indices;
+        bool has_tangent = mesh->mTangents && mesh->mBitangents;
+        int vertex_rank = has_tangent ? 8 : 14;
+        vertices.reserve(mesh->mNumVertices * vertex_rank);
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
             vertices.insert(vertices.end(), 
             {
+                // vertex
                 mesh->mVertices[i].x,
                 mesh->mVertices[i].y,
                 mesh->mVertices[i].z,
+                // normal
                 mesh->mNormals[i].x,
                 mesh->mNormals[i].y,
                 mesh->mNormals[i].z
             });
+            // texture uv
             if (mesh->mTextureCoords[0]) 
             {
                 vertices.insert(vertices.end(), { mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y });
@@ -47,7 +49,24 @@ class Mesh
             {
                 vertices.insert(vertices.end(), {0, 0});
             }
+            if (has_tangent)
+            {
+                vertices.insert(vertices.end(), 
+                {
+                    // tangent
+                    mesh->mTangents[i].x,
+                    mesh->mTangents[i].y,
+                    mesh->mTangents[i].z,
+                    // bitangent
+                    mesh->mBitangents[i].x,
+                    mesh->mBitangents[i].y,
+                    mesh->mBitangents[i].z
+                });
+            }
         }
+        GLuint vb = BUFFER.generate_buffer(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data());
+        // indices
+        std::vector<unsigned int> indices;
         for (unsigned int i = 0; i < mesh->mNumFaces; i++)
         {
             aiFace face = mesh->mFaces[i];
@@ -56,9 +75,8 @@ class Mesh
                 indices.push_back(face.mIndices[j]);
             }
         }
-        GLuint vb = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, vertices.size() * sizeof(float) * 8, vertices.data());
         GLuint eb = BUFFER.generate_buffer(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data());
-        _va.attach_buffer(PNT_LAYOUT, vb, eb);
+        _va.attach_buffer(has_tangent ? PNTTB_LAYOUT : PNT_LAYOUT, vb, eb);
         _elements_ct = indices.size();
         if (mesh->mMaterialIndex >= 0)
         {

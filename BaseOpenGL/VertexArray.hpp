@@ -51,6 +51,17 @@ static inline BufferLayout PNT_LAYOUT = []()
     return layout;
 }();
 
+static inline BufferLayout PNTTB_LAYOUT = []() 
+{
+    BufferLayout layout;
+    layout.add_attribute(GL_FLOAT, 3); // position
+    layout.add_attribute(GL_FLOAT, 3); // normal
+    layout.add_attribute(GL_FLOAT, 2); // texture uv
+    layout.add_attribute(GL_FLOAT, 3); // tangent
+    layout.add_attribute(GL_FLOAT, 3); // bitangent
+    return layout;
+}();
+
 class VertexArray
 {
     friend class Mesh;
@@ -83,8 +94,8 @@ class VertexArray
 public:
     VertexArray() { glGenVertexArrays(1, &_id); }
     ~VertexArray() { if (_id) glDeleteVertexArrays(1, &_id); }
-    void bind() const { glBindVertexArray(_id); }
-    void unbind() const { glBindVertexArray(0); }
+    inline void bind() const { glBindVertexArray(_id); }
+    inline void unbind() const { glBindVertexArray(0); }
     void attach_buffer(const BufferLayout& layout, GLuint b_buffer_id, GLuint e_buffer_id)
     {
         glBindVertexArray(_id);
