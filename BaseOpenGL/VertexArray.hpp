@@ -42,7 +42,7 @@ struct BufferLayout
     }
 };
 
-static inline BufferLayout PNT_LAYOUT = []() 
+static inline auto PNT_LAYOUT = []() -> BufferLayout
 {
     BufferLayout layout;
     layout.add_attribute(GL_FLOAT, 3); // position
@@ -51,7 +51,7 @@ static inline BufferLayout PNT_LAYOUT = []()
     return layout;
 }();
 
-static inline BufferLayout PNTTB_LAYOUT = []() 
+static inline auto PNTTB_LAYOUT = []() -> BufferLayout
 {
     BufferLayout layout;
     layout.add_attribute(GL_FLOAT, 3); // position
