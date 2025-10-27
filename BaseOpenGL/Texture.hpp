@@ -31,16 +31,17 @@ class TextureManager
 public:
     void load_from_material(aiMaterial* material, Textures& textures, std::string_view directory)
     {
-        auto diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
+        auto diffuseMaps = load_material_textures(material, aiTextureType_DIFFUSE, "texture_diffuse", directory);
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-        // auto specularMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_specular", directory);
-        // textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
-        // auto normalMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_normal", directory);
-        // textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
-        // auto heightMaps = loadMaterialTextures(material, aiTextureType_SPECULAR, "texture_height", directory);
-        // textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
+        auto specularMaps = load_material_textures(material, aiTextureType_SPECULAR, "texture_specular", directory);
+        textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
+        auto normalMaps = load_material_textures(material, aiTextureType_SPECULAR, "texture_normal", directory);
+        textures.insert(textures.end(), normalMaps.begin(), normalMaps.end());
+        auto heightMaps = load_material_textures(material, aiTextureType_SPECULAR, "texture_height", directory);
+        textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
     }
-    Textures loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName, std::string_view directory)
+
+    Textures load_material_textures(aiMaterial* mat, aiTextureType type, std::string typeName, std::string_view directory)
     {
         Textures textures;
         for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
@@ -48,43 +49,12 @@ public:
             aiString file_name;
             mat->GetTexture(type, i, &file_name);
             std::string path = std::string{directory.data()} + "/" + file_name.C_Str();
-            int width, height, nrComponents;
-            unsigned char* data = stbi_load(path.data(), &width, &height, &nrComponents, 0);
-            if (!data)
-            {
-                LOG.info("Texture load error : " + path);
-                stbi_image_free(data);
-                continue;
-            }
-            GLuint id = 0;
-            switch (nrComponents) 
-            {
-                case 1:
-                {
-                    id = load_texture(path, width, height, data, TEXTURE_2D_GRAY);
-                    break;
-                }
-                case 3:
-                {
-                    id = load_texture(path, width, height, data, TEXTURE_2D_RGB);
-                    break;
-                }
-                case 4:
-                {
-                    id = load_texture(path, width, height, data, TEXTURE_2D_ALPHA);
-                    break;
-                }
-                default:
-                {
-                    throw std::runtime_error("we cannot support this components");
-                }
-            }
-            stbi_image_free(data);
-            textures.emplace_back(id, typeName);
+            textures.emplace_back(load_texture_auto(path), typeName);
         }
         return textures;
     }
-    GLuint load_texture(std::string_view path, int width, int height, const void *data, const TextureAttributes& attributes = TEXTURE_2D_RGB)
+
+    GLuint load_texture_auto(std::string_view path)
     {
         if (_loaded_textures.find(path.data()) != _loaded_textures.end())
         {
@@ -92,6 +62,36 @@ public:
         }
         GLuint textureID;
         glGenTextures(1, &textureID);
+        TextureAttributes attributes;
+        int width, height, nrComponents;
+        unsigned char* data = stbi_load(path.data(), &width, &height, &nrComponents, 0);
+        if (!data)
+        {
+            LOG.info(std::string{"Texture load error : "} + path.data());
+            stbi_image_free(data);
+        }
+        switch (nrComponents) 
+        {
+            case 1:
+            {
+                attributes = TEXTURE_2D_GRAY;
+                break;
+            }
+            case 3:
+            {
+                attributes = TEXTURE_2D_RGB;
+                break;
+            }
+            case 4:
+            {
+                attributes = TEXTURE_2D_ALPHA;
+                break;
+            }
+            default:
+            {
+                throw std::runtime_error("we cannot support this components");
+            }
+        }
         glBindTexture(attributes._target, textureID);
         glTexImage2D
         (
@@ -155,4 +155,5 @@ public:
         return textureID;
     }
 };
+
 

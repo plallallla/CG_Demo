@@ -286,7 +286,7 @@ class ModelWidget : public GLWidget
         //     m._va.unbind();
         // }
 
-        // vourModel.render_elements(_back_shader);
+        vourModel.render_elements(_back_shader);
         // cyborg.render_elements(_back_shader);
 
         glUseProgram(0);
