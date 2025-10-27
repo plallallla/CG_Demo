@@ -96,6 +96,7 @@ public:
 
     template<typename T>
     void set_uniform(std::string_view name, const T& value) const;
+
     template<>
     void set_uniform<int>(std::string_view name, const int& value) const
     {
@@ -115,7 +116,7 @@ public:
     }
 
     template<>
-    void set_uniform<unsigned int>(std::string_view name, const unsigned int& value) const
+    void set_uniform<GLuint>(std::string_view name, const GLuint& value) const
     {
         glUniform1ui(glGetUniformLocation(_id, name.data()), value);
     }
@@ -160,6 +161,23 @@ public:
     {
         set_uniform<int>(sampler_name, _samplers.size());
         _samplers.emplace_back(texture_id);
+    }
+
+    template<typename T>
+    void set_uniform_vector(std::string_view name, GLsizei rank, void* data) const
+    {
+        if constexpr (std::is_same_v<T, float>) 
+        {
+            glUniform1fv(glGetUniformLocation(_id, name.data()), 4, (GLfloat*)data);
+        }
+        else if constexpr (std::is_same_v<T, glm::vec2>) 
+        {
+            glUniform2fv(glGetUniformLocation(_id, name.data()), 4, (GLfloat*)data);
+        }
+        else if constexpr (std::is_same_v<T, glm::vec3>) 
+        {
+            glUniform3fv(glGetUniformLocation(_id, name.data()), 4, (GLfloat*)data);
+        }
     }
 
 private:
