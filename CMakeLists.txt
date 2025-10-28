@@ -13,8 +13,6 @@ find_package(Stb REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 
-file(GLOB BASE_SOURCES "BaseOpenGL/*.cpp")
-
 file(GLOB TARGET_SOURCES "src/*/main.cpp")
 
 foreach(main_file ${TARGET_SOURCES})
@@ -22,7 +20,7 @@ foreach(main_file ${TARGET_SOURCES})
     get_filename_component(target_name ${dir_name} NAME)
 
     # 创建可执行文件
-    add_executable(${target_name} ${BASE_SOURCES} ${main_file})
+    add_executable(${target_name} ${main_file})
 
     # 配置第三方库
     target_link_libraries(${target_name} PRIVATE glfw glad::glad assimp::assimp spdlog::spdlog_header_only)
