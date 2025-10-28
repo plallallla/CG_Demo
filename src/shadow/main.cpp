@@ -32,7 +32,7 @@ private:
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
-    QuadRender debug;
+    QuadRender debug{"../glsl/shadow/quad.fs"};
     virtual void application() override
     {
 
@@ -73,6 +73,7 @@ private:
         fb.unbind();
 
         debug.render_texture(depth_texture);
+
 
         // glViewport(0, 0, _width, _height);
         // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
