@@ -42,6 +42,20 @@ inline auto TEXTURE_2D_SRGB = [] () -> TextureAttributes
     };
 }();
 
+inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes
+{
+    return TextureAttributes
+    {
+        GL_TEXTURE_2D,
+        GL_REPEAT, GL_REPEAT, // warp
+        GL_LINEAR, GL_LINEAR, // filter
+        GL_SRGB8,
+        GL_RGB, 
+        GL_UNSIGNED_BYTE, 
+        true
+    };
+}();
+
 inline auto TEXTURE_2D_ALPHA = [] () -> TextureAttributes
 {
     return TextureAttributes
@@ -51,20 +65,6 @@ inline auto TEXTURE_2D_ALPHA = [] () -> TextureAttributes
         GL_LINEAR, GL_LINEAR, // filter
         GL_RGBA8,
         GL_RGBA, 
-        GL_UNSIGNED_BYTE, 
-        true
-    };
-}();
-
-inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes
-{
-    return TextureAttributes
-    {
-        GL_TEXTURE_2D,
-        GL_REPEAT, GL_REPEAT, // warp
-        GL_LINEAR, GL_LINEAR, // filter
-        GL_SRGB8, 
-        GL_SRGB, 
         GL_UNSIGNED_BYTE, 
         true
     };

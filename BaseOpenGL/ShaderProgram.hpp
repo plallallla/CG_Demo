@@ -178,6 +178,10 @@ public:
         {
             glUniform3fv(glGetUniformLocation(_id, name.data()), 4, (GLfloat*)data);
         }
+        else 
+        {
+            //error;
+        }
     }
 
 private:
