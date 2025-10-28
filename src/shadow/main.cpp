@@ -14,6 +14,7 @@
 #include "Texture.hpp"
 #include "Frame.hpp"
 #include "GLWidget.hpp"
+#include "TextureAttributes.hpp"
 
 class shadowWidget : public GLWidget
 {
@@ -26,6 +27,7 @@ private:
     ShadowScene scene;
     glm::mat4 model = glm::mat4(1.0f);
     FrameBuffer fb{1024,1024};
+    GLuint depth_texture = TEXTURE_MANAGER.generate_texture_buffer(1024*2, 1024*2, TEXTURE_2D_DEPTH);
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
@@ -40,7 +42,8 @@ private:
 
         CAMERA.set_position({0,1.,3.});
 
-        fb.create_depth_attachment();
+        fb.bind();
+        fb.attach_depth_texture(depth_texture);
 
         depth_shader.use();
         lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 7.5f);
@@ -50,7 +53,7 @@ private:
 
         shader.use();
         shader.add_sampler("diffuseTexture", woodTexture);
-        shader.add_sampler("shadowMap", fb.get_depth_texture());
+        shader.add_sampler("shadowMap", depth_texture);
         shader.set_uniform<glm::vec3>("lightPos", lightPos);
         shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
 

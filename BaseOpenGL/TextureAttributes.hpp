@@ -82,3 +82,16 @@ inline auto TEXTURE_2D_GRAY = []() -> TextureAttributes {
         false
     };
 }();
+
+inline auto TEXTURE_2D_DEPTH = []() -> TextureAttributes {
+    return TextureAttributes
+    {
+        GL_TEXTURE_2D,
+        GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, // warp
+        GL_NEAREST, GL_NEAREST, // filter
+        GL_DEPTH_COMPONENT24, 
+        GL_DEPTH_COMPONENT,
+        GL_FLOAT,
+        false
+    };
+}();

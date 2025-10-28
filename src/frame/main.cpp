@@ -6,6 +6,8 @@
 #include "Buffer.hpp"
 #include "Texture.hpp"
 
+#include "Frame.hpp"
+
 float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -87,6 +89,9 @@ class FrameWidget : public GLWidget
 
     GLuint framebuffer;
     GLuint textureColorbuffer;
+    GLuint deepth;
+
+    FrameBuffer _frame{_width, _height};
 
 
     virtual void application() override
@@ -114,23 +119,24 @@ class FrameWidget : public GLWidget
         );
         _sp.add_sampler("texture1", 1);
 
-
-        // framebuffer configuration
-        // -------------------------
-        glGenFramebuffers(1, &framebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        // create a color attachment texture
         textureColorbuffer = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_RGB);
+        deepth = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_DEPTH);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-        // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+        _frame.bind();
+        _frame.attach_color_texture(textureColorbuffer);
+        _frame.attach_depth_texture(deepth);
+
+        // glGenFramebuffers(1, &framebuffer);
+        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, deepth, 0);
+
         unsigned int rbo;
         glGenRenderbuffers(1, &rbo);
         glBindRenderbuffer(GL_RENDERBUFFER, rbo);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width*2, _height*2); // use a single renderbuffer object for both a depth AND stencil buffer.
-        
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
-        // now that we actually created the framebuffer and added all attachments we want to check if it is actually complete now
+       
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) LOG.info("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -184,7 +190,8 @@ class FrameWidget : public GLWidget
 
     virtual void render_loop() override
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        _frame.bind();
         render_scene();
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);

@@ -1,11 +1,16 @@
 #pragma once
 #include <glad/glad.h>
-
 #include <stdexcept>
 
 class FrameBuffer 
 {
 public:
+
+    static void render_to_sreen()
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
     FrameBuffer(int width, int height) : _width(width), _height(height)
     {
         glGenFramebuffers(1, &_id);
@@ -19,18 +24,26 @@ public:
         }
     }
 
-    void bind_color_texturere(GLuint texture)
+    void attach_color_texture(GLuint texture)
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + _color_attachment_ct, GL_TEXTURE_2D, texture, 0);
         _color_attachment_ct++;
     }
 
-    void bind_depth_texturere(GLuint texture)
+    void attach_depth_texture(GLuint texture)
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
     }
 
-    void update_viewport() const 
+    void use_render_object()
+    {
+        glGenRenderbuffers(1, &_rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width * 2, _height * 2);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
+    }
+
+    void update_viewport() const
     {
         glViewport(0, 0, _width * 2, _height * 2);
     }
@@ -94,6 +107,7 @@ private:
     int _width{ 0 };
     int _height{ 0 };
     GLuint _id;
+    GLuint _rbo;
     int _color_attachment_ct{ 0 };
 };
 
