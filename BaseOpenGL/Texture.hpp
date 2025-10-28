@@ -154,6 +154,19 @@ public:
         stbi_image_free(data);
         return textureID;
     }
+
+    GLuint generate_texture_buffer(int width, int height, const TextureAttributes& attributes)
+    {
+        GLuint id;
+        glGenTextures(1, &id);
+        glBindTexture(attributes._target, id);
+        glTexImage2D(attributes._target, 0, attributes._internal_format, width, height, 0, attributes._image_format, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
+        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
+        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._max_filtering);
+        return id;
+    }
 };
 
 
