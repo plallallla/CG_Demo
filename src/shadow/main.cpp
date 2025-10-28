@@ -15,6 +15,7 @@
 #include "Frame.hpp"
 #include "GLWidget.hpp"
 #include "TextureAttributes.hpp"
+#include "QuadRender.hpp"
 
 class shadowWidget : public GLWidget
 {
@@ -31,6 +32,7 @@ private:
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
     unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
+    QuadRender debug;
     virtual void application() override
     {
 
@@ -70,14 +72,16 @@ private:
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
         fb.unbind();
 
-        glViewport(0, 0, _width, _height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shader.use();
-        shader.set_uniform<glm::mat4>("projection", get_projection());
-        shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
-        shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
-        shader.active_samplers();
-        scene.render(shader);//pass2 实际渲染到屏幕上
+        debug.render_texture(depth_texture);
+
+        // glViewport(0, 0, _width, _height);
+        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // shader.use();
+        // shader.set_uniform<glm::mat4>("projection", get_projection());
+        // shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
+        // shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
+        // shader.active_samplers();
+        // scene.render(shader);//pass2 实际渲染到屏幕上
     }
 
 };

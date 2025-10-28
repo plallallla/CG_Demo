@@ -8,6 +8,8 @@
 
 #include "Frame.hpp"
 
+#include "QuadRender.hpp"
+
 float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -78,6 +80,8 @@ class FrameWidget : public GLWidget
     VertexArray _va_cube;
     VertexArray _va_plane;
     VertexArray _va_quad;
+
+    QuadRender _debug{"../glsl/frame/framebuffers_screen.fs"};
 
     GLuint _cube_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container.jpg")};
     GLuint _floor_texture{TEXTURE_MANAGER.load_texture("../resources/textures/metal.png")};
@@ -185,6 +189,8 @@ class FrameWidget : public GLWidget
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);	// use the color attachment texture as the texture of the quad plane
         glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // _debug.reload_fs_file("../glsl/frame/framebuffers_screen.fs");
     }
 
 
@@ -195,7 +201,9 @@ class FrameWidget : public GLWidget
         render_scene();
         
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        render_texture(textureColorbuffer);
+        // render_texture(textureColorbuffer);
+        // _debug.render_texture(_floor_texture);
+        _debug.render_texture(textureColorbuffer);
 
 
 
