@@ -12,6 +12,7 @@ find_package(glad CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(assimp CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(soil CONFIG REQUIRED)
 
 file(GLOB TARGET_SOURCES "src/*/main.cpp")
 
@@ -23,7 +24,7 @@ foreach(main_file ${TARGET_SOURCES})
     add_executable(${target_name} ${main_file})
 
     # 配置第三方库
-    target_link_libraries(${target_name} PRIVATE glfw glad::glad assimp::assimp spdlog::spdlog_header_only)
+    target_link_libraries(${target_name} PRIVATE glfw glad::glad assimp::assimp spdlog::spdlog_header_only soil)
     target_include_directories(${target_name} PRIVATE ${Stb_INCLUDE_DIR})
 
 endforeach()

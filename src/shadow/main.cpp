@@ -42,7 +42,7 @@ private:
 #endif
         glEnable(GL_DEPTH_TEST);
 
-        CAMERA.set_position({0,1.,3.});
+        CAMERA.set_position({0,0.5,5.});
 
         fb.bind();
         fb.attach_depth_texture(depth_texture);
@@ -72,17 +72,17 @@ private:
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
         fb.unbind();
 
-        debug.render_texture(depth_texture);
+        // debug.render_texture(depth_texture);
 
 
-        // glViewport(0, 0, _width, _height);
-        // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // shader.use();
-        // shader.set_uniform<glm::mat4>("projection", get_projection());
-        // shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
-        // shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
-        // shader.active_samplers();
-        // scene.render(shader);//pass2 实际渲染到屏幕上
+        glViewport(0, 0, _width, _height);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        shader.use();
+        shader.set_uniform<glm::mat4>("projection", get_projection());
+        shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
+        shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
+        shader.active_samplers();
+        scene.render(shader);//pass2 实际渲染到屏幕上
     }
 
 };

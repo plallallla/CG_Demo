@@ -6,10 +6,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Buffer.hpp"
 #include "Camera.hpp"
 #include "GLWidget.hpp"
-#include "ShaderProgram.h"
-#include "Vertex.h"
+#include "ShaderProgram.hpp"
+#include "VertexArray.hpp"
 #include "Texture.hpp"
 
 float cubeVertices[] = 
@@ -86,21 +87,18 @@ private:
         glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
         glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
+        BufferLayout lay;
+        lay.add_attribute(GL_FLOAT, 3);
+        lay.add_attribute(GL_FLOAT, 2);
+
         // scene
-        {
-            VertexBuffer vb;
-            vb.set_data(sizeof(planeVertices), planeVertices);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 2, false);
-            plane_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
-        }
-        {
-            VertexBuffer vb;
-            vb.set_data(sizeof(cubeVertices), cubeVertices);
-            vb.add_layout(GL_FLOAT, 3, false);
-            vb.add_layout(GL_FLOAT, 2, false);
-            cube_va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
-        }
+        plane_va.attach_vertex_buffer(lay, BUFFER.generate_vertex_buffer(sizeof(planeVertices), planeVertices));
+
+
+
+
+        // cube_va.attach_vertex_buffer(lay, BUFFER.generate_vertex_buffer(cubeVertices));
+        cube_va.attach_vertex_buffer(lay, BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices));
 
         sp.use();
         sp.set_uniform<int>("texture1", 0);

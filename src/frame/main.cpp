@@ -130,10 +130,6 @@ class FrameWidget : public GLWidget
         _frame.attach_color_texture(textureColorbuffer);
         _frame.attach_depth_texture(deepth);
 
-        // glGenFramebuffers(1, &framebuffer);
-        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-        // glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, deepth, 0);
 
         unsigned int rbo;
         glGenRenderbuffers(1, &rbo);

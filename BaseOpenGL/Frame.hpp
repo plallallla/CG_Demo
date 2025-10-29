@@ -24,10 +24,9 @@ public:
         }
     }
 
-    void attach_color_texture(GLuint texture)
+    void attach_color_texture(GLuint texture, GLuint offset = 0)
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + _color_attachment_ct, GL_TEXTURE_2D, texture, 0);
-        _color_attachment_ct++;
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + offset, GL_TEXTURE_2D, texture, 0);
     }
 
     void attach_depth_texture(GLuint texture)
@@ -35,12 +34,18 @@ public:
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
     }
 
-    void use_render_object()
+    void attach_stencil_texture(GLuint texture)
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+    }
+
+    void create_render_object()
     {
         glGenRenderbuffers(1, &_rbo);
         glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width * 2, _height * 2);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width, _height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
+        glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
     void update_viewport() const
@@ -106,9 +111,8 @@ public:
 private:
     int _width{ 0 };
     int _height{ 0 };
-    GLuint _id;
-    GLuint _rbo;
-    int _color_attachment_ct{ 0 };
+    GLuint _id{ 0 };
+    GLuint _rbo{ 0 };
 };
 
 
