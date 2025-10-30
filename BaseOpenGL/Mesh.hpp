@@ -92,13 +92,9 @@ public:
     void render_elements(const ShaderProgram& shader) const
     {
         shader.use();
-        int sampler_offset = shader.get_samplers_ct();
         for (int i = 0; i < _textures.size(); i++)
         {
-            shader.set_uniform<int>(_textures[i]._type, sampler_offset);
-            glActiveTexture(GL_TEXTURE0 + sampler_offset);
-            glBindTexture(GL_TEXTURE_2D, _textures[i]._id);
-            sampler_offset++;
+            shader.active_sampler(i, _textures[i]);
         }
         _va.bind();
         glDrawElements(GL_TRIANGLES, _elements_ct, GL_UNSIGNED_INT, 0);
@@ -108,13 +104,9 @@ public:
     void render_elements_instanced(const ShaderProgram& shader, GLsizei instance_count) const
     {
         shader.use();
-        int sampler_offset = shader.get_samplers_ct();
         for (int i = 0; i < _textures.size(); i++)
         {
-            shader.set_uniform<int>(_textures[i]._type, sampler_offset);
-            glActiveTexture(GL_TEXTURE0 + sampler_offset);
-            glBindTexture(GL_TEXTURE_2D, _textures[i]._id);
-            sampler_offset++;
+            shader.active_sampler(i, _textures[i]);
         }
         _va.bind();
         glDrawElementsInstanced(GL_TRIANGLES, _elements_ct, GL_UNSIGNED_INT, 0, instance_count);

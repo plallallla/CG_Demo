@@ -22,7 +22,6 @@ public:
     {
         _id = other._id;
         other._id = 0;
-        _samplers = other._samplers;
     }
 
     ShaderProgram() { _id = glCreateProgram(); }
@@ -82,17 +81,11 @@ public:
         utility::checkCompileErrors(_id, "PROGRAME");
     }
 
-
-    void active_samplers() const
+    void active_sampler(int offset, GLuint texture) const
     {
-        for (int i = 0; i < _samplers.size(); i++)
-        {
-            glActiveTexture(GL_TEXTURE0 +i);
-            glBindTexture(GL_TEXTURE_2D, _samplers[i]);
-        }
+        glActiveTexture(GL_TEXTURE0 + offset);
+        glBindTexture(GL_TEXTURE_2D, texture);
     }
-
-    int get_samplers_ct() const { return (int)_samplers.size(); }
 
     template<typename T>
     void set_uniform(std::string_view name, const T& value) const;
@@ -157,10 +150,9 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(_id, name.data()), 1, GL_FALSE, &mat[0][0]);
     }
 
-    void add_sampler(std::string_view sampler_name, const int& texture_id)
+    void set_sampler(int sampler_id, std::string_view sampler_name)
     {
-        set_uniform<int>(sampler_name, _samplers.size());
-        _samplers.emplace_back(texture_id);
+        set_uniform<int>(sampler_name, sampler_id);
     }
 
     template<typename T>
@@ -186,7 +178,6 @@ public:
 
 private:
     GLuint _id;
-    std::vector<unsigned int> _samplers;
 };
 
 

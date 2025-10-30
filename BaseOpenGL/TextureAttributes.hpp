@@ -56,6 +56,20 @@ inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes
     };
 }();
 
+inline auto TEXTURE_2D_GAMMA_ALPHA = [] () -> TextureAttributes
+{
+    return TextureAttributes
+    {
+        GL_TEXTURE_2D,
+        GL_REPEAT, GL_REPEAT, // warp
+        GL_LINEAR, GL_LINEAR, // filter
+        GL_SRGB_ALPHA,
+        GL_RGBA, 
+        GL_UNSIGNED_BYTE, 
+        true
+    };
+}();
+
 inline auto TEXTURE_2D_ALPHA = [] () -> TextureAttributes
 {
     return TextureAttributes

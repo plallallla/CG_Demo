@@ -37,11 +37,10 @@ public:
     BloomWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
 private:
     ShaderProgram _shader{"../glsl/bloom/bloom.vs", "../glsl/bloom/bloom.fs"};
-    // GLuint _cotainer_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container2.png", TEXTURE_2D_GAMMA)};
-    // GLuint _wood_texture{TEXTURE_MANAGER.load_texture("../resources/textures/wood.png", TEXTURE_2D_GAMMA)};
-    // Cube _cube;
-    // FrameBuffer _fb_hdr{800,600};
-    // FrameBuffer _fb_pingpong{800,600};
+    GLuint _cotainer_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container2.png", TEXTURE_2D_GAMMA_ALPHA)};
+    GLuint _wood_texture{TEXTURE_MANAGER.load_texture("../resources/textures/wood.png", TEXTURE_2D_GAMMA)};
+    FrameBuffer _fb_hdr{800,600};
+    FrameBuffer _fb_pingpong{800,600};
     VertexArray _cube_va;
 
     void render_cube()
@@ -54,66 +53,59 @@ private:
     virtual void application() override
     {
 
-        // float vertices[] = 
-        // {
-        //     // back face
-        //     -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-        //      1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-        //      1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
-        //      1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
-        //     -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
-        //     -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
-        //     // front face
-        //     -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-        //      1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
-        //      1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-        //      1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
-        //     -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
-        //     -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
-        //     // left face
-        //     -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        //     -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
-        //     -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        //     -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
-        //     -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        //     -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
-        //     // right face
-        //      1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-        //      1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-        //      1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
-        //      1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
-        //      1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
-        //      1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
-        //     // bottom face
-        //     -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-        //      1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
-        //      1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-        //      1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
-        //     -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
-        //     -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
-        //     // top face
-        //     -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-        //      1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-        //      1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
-        //      1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
-        //     -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
-        //     -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
-        // };
+        glEnable(GL_DEPTH_TEST);
 
-float vertices[] = {
-    // 位置              // 颜色
-     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
-    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // 顶部
-};
+        float vertices[] = 
+        {
+            // back face
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right         
+             1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+            -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+            -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+            // front face
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+             1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+            -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+            -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+            // left face
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+            // right face
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right         
+             1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+             1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+             1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left     
+            // bottom face
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+             1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+             1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+            -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+            -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+            // top face
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+             1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+             1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right     
+             1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+            -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+            -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left        
+        };
 
-        BufferLayout lay;
-        lay.add_attribute(GL_FLOAT, 3);
-        lay.add_attribute(GL_FLOAT, 3);
-        _cube_va.attach_vertex_buffer(lay, BUFFER.generate_vertex_buffer(sizeof(vertices), vertices));
 
-        // _shader.use();
-        // _shader.add_sampler("", _wood_texture);
+        _cube_va.attach_vertex_buffer(PNT_LAYOUT, BUFFER.generate_vertex_buffer(sizeof(vertices), vertices));
+
+        _shader.use();
+        _shader.set_sampler(0, "diffuseTexture");
         // _fb_hdr.bind();
         // _fb_hdr.attach_color_texture(TEXTURE_MANAGER.generate_texture_buffer(800, 600, TEXTURE_2D_HDR));
         // _fb_hdr.attach_color_texture(TEXTURE_MANAGER.generate_texture_buffer(800, 600, TEXTURE_2D_HDR));
@@ -126,68 +118,67 @@ float vertices[] = {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         _cube_va.bind();
         _shader.use();
-        glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        // _shader.set_uniform("projection", get_projection());
-        // _shader.set_uniform("view", CAMERA.get_view_matrix());
-        // _shader.active_samplers();
+        _shader.set_uniform("projection", get_projection());
+        _shader.set_uniform("view", CAMERA.get_view_matrix());
 
-        // glActiveTexture(GL_TEXTURE0);
-        // glBindTexture(GL_TEXTURE_2D, _wood_texture);
+        _shader.active_sampler(0, _wood_texture);
         // // set lighting uniforms
         // for (unsigned int i = 0; i < lightPositions.size(); i++)
         // {
         //     _shader.set_uniform("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
         //     _shader.set_uniform("lights[" + std::to_string(i) + "].Color", lightColors[i]);
         // }
-        // _shader.set_uniform("viewPos", CAMERA.get_position());
+        _shader.set_uniform("viewPos", CAMERA.get_position());
         // // create one large cube that acts as the floor
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
-        // model = glm::scale(model, glm::vec3(12.5f, 0.5f, 12.5f));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        glm::mat4 model(1.0);
+        model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
+        model = glm::scale(model, glm::vec3(12.5f, 0.5f, 12.5f));
+        _shader.set_uniform("model", model);
+        render_cube();
 
         // // then create multiple cubes as the scenery
-        // glBindTexture(GL_TEXTURE_2D, _cotainer_texture);
+        _shader.active_sampler(0, _cotainer_texture);
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
-        // model = glm::scale(model, glm::vec3(0.5f));
-        // _shader.set_uniform("model", model);
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        _shader.set_uniform("model", model);
+        _shader.set_uniform("model", model);
+        render_cube();
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
-        // model = glm::scale(model, glm::vec3(0.5f));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 1.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        _shader.set_uniform("model", model);
+        render_cube();
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(-1.0f, -1.0f, 2.0));
-        // model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-1.0f, -1.0f, 2.0));
+        model = glm::rotate(model, glm::radians(60.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+        _shader.set_uniform("model", model);
+        render_cube();
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(0.0f, 2.7f, 4.0));
-        // model = glm::rotate(model, glm::radians(23.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-        // model = glm::scale(model, glm::vec3(1.25));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(0.0f, 2.7f, 4.0));
+        model = glm::rotate(model, glm::radians(23.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+        model = glm::scale(model, glm::vec3(1.25));
+        _shader.set_uniform("model", model);
+        render_cube();
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -3.0));
-        // model = glm::rotate(model, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -3.0));
+        model = glm::rotate(model, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+        _shader.set_uniform("model", model);
+        render_cube();
 
-        // model = glm::mat4(1.0f);
-        // model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0));
-        // model = glm::scale(model, glm::vec3(0.5f));
-        // _shader.set_uniform("model", model);
-        // render_cube();
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0));
+        model = glm::scale(model, glm::vec3(0.5f));
+        _shader.set_uniform("model", model);
+        render_cube();
+
+        std::cout << CAMERA.get_position().x << " " << CAMERA.get_position().y << " " << CAMERA.get_position().z << std::endl;
     }
 };
 
@@ -226,7 +217,7 @@ public:
 
 int main()
 {
-    TWidget w{800,600,"bloom"};
+    BloomWidget w{800,600,"bloom"};
     w.render();
     return 0;
 }
