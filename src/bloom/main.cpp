@@ -200,7 +200,7 @@ private:
 
 class TWidget : public GLWidget
 {
-    ShaderProgram s{"../glsl/bloom/bloom.vs", "../glsl/bloom/bloom.fs"};
+    ShaderProgram s{"../glsl/bloom/test.vs", "../glsl/bloom/test.fs"};
     VertexArray vao;
 
     virtual void application() override
@@ -222,6 +222,24 @@ class TWidget : public GLWidget
     {
         s.use();
         vao.bind();
+        // s.set_uniform("lights[0].Position", lightPositions[0]);
+        // s.set_uniform("lights[0].Color", lightColors[0]);
+        // s.set_uniform("lights[1].Position", lightPositions[1]);
+        // s.set_uniform("lights[1].Color", lightColors[1]);
+
+
+
+        s.set_uniform("lights[0].Position", lightPositions[0]);
+        s.set_uniform("lights[0].Color", lightColors[0]);
+        s.set_uniform("lights[1].Position", lightPositions[1]);
+        s.set_uniform("lights[1].Color", lightColors[1]);
+        s.set_uniform("lights[2].Position", lightPositions[2]);
+        s.set_uniform("lights[2].Color", lightColors[2]);
+        s.set_uniform("lights[3].Position", lightPositions[3]);
+        s.set_uniform("lights[3].Color", lightColors[3]);
+
+
+        
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glUseProgram(0);
     }
@@ -233,6 +251,7 @@ public:
 
 int main()
 {
+    // TWidget w{800,600,"bloom"};
     BloomWidget w{800,600,"bloom"};
     w.render();
     return 0;
