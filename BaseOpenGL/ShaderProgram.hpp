@@ -2,7 +2,6 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <string_view>
-#include <vector>
 
 #include "Shader.hpp"
 #include "utility.hpp"

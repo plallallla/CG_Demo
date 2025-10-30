@@ -123,13 +123,29 @@ private:
         _shader.set_uniform("view", CAMERA.get_view_matrix());
 
         _shader.active_sampler(0, _wood_texture);
-        // // set lighting uniforms
+        // set lighting uniforms
         // for (unsigned int i = 0; i < lightPositions.size(); i++)
         // {
         //     _shader.set_uniform("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
         //     _shader.set_uniform("lights[" + std::to_string(i) + "].Color", lightColors[i]);
         // }
+
+
+        _shader.set_uniform("lights[0].Position", lightPositions[0]);
+        _shader.set_uniform("lights[0].Color", lightColors[0]);
+        _shader.set_uniform("lights[1].Position", lightPositions[1]);
+        _shader.set_uniform("lights[1].Color", lightColors[1]);
+        _shader.set_uniform("lights[2].Position", lightPositions[2]);
+        _shader.set_uniform("lights[2].Color", lightColors[2]);
+        _shader.set_uniform("lights[3].Position", lightPositions[3]);
+        _shader.set_uniform("lights[3].Color", lightColors[3]);
+        
+        
+        // _shader.set_uniform("lights.Position", lightPositions[0]);
+        // _shader.set_uniform("lights.Color", lightColors[0]);
+
         _shader.set_uniform("viewPos", CAMERA.get_position());
+
         // // create one large cube that acts as the floor
         glm::mat4 model(1.0);
         model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
