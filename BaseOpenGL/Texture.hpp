@@ -17,9 +17,13 @@
 
 struct Texture
 {
-    unsigned int id{0};
-    std::string type{""};
-    Texture(unsigned int Id = 0, std::string Type = "") : id(Id), type(Type) {}
+    GLuint _id{0};
+    std::string _type{""};
+    Texture(GLuint id = 0, std::string_view type = "") : _id{ id }, _type{ type } {}
+    operator GLuint() const
+    {
+        return _id;
+    }
 };
 using Textures = std::vector<Texture>;
 
@@ -49,12 +53,12 @@ public:
             aiString file_name;
             mat->GetTexture(type, i, &file_name);
             std::string path = std::string{directory.data()} + "/" + file_name.C_Str();
-            textures.emplace_back(load_texture_auto(path), typeName);
+            textures.emplace_back(auto_load_texture(path), typeName);
         }
         return textures;
     }
 
-    GLuint load_texture_auto(std::string_view path)
+    GLuint auto_load_texture(std::string_view path)
     {
         if (_loaded_textures.find(path.data()) != _loaded_textures.end())
         {

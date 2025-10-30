@@ -95,9 +95,9 @@ public:
         int sampler_offset = shader.get_samplers_ct();
         for (int i = 0; i < _textures.size(); i++)
         {
-            shader.set_uniform<int>(_textures[i].type, sampler_offset);
+            shader.set_uniform<int>(_textures[i]._type, sampler_offset);
             glActiveTexture(GL_TEXTURE0 + sampler_offset);
-            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, _textures[i]._id);
             sampler_offset++;
         }
         _va.bind();
@@ -111,9 +111,9 @@ public:
         int sampler_offset = shader.get_samplers_ct();
         for (int i = 0; i < _textures.size(); i++)
         {
-            shader.set_uniform<int>(_textures[i].type, sampler_offset);
+            shader.set_uniform<int>(_textures[i]._type, sampler_offset);
             glActiveTexture(GL_TEXTURE0 + sampler_offset);
-            glBindTexture(GL_TEXTURE_2D, _textures[i].id);
+            glBindTexture(GL_TEXTURE_2D, _textures[i]._id);
             sampler_offset++;
         }
         _va.bind();
