@@ -95,3 +95,16 @@ inline auto TEXTURE_2D_DEPTH = []() -> TextureAttributes {
         false
     };
 }();
+
+inline auto TEXTURE_2D_HDR = []() -> TextureAttributes {
+    return TextureAttributes
+    {
+        GL_TEXTURE_2D,
+        GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, // warp
+        GL_NEAREST, GL_NEAREST, // filter
+        GL_RGBA16F, 
+        GL_RGBA,
+        GL_FLOAT,
+        false
+    };
+}();
