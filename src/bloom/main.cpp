@@ -1,6 +1,7 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
 #include "ShaderProgram.hpp"
+#include "TextureAttributes.hpp"
 #include "VertexArray.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
@@ -30,15 +31,20 @@ private:
     GLuint _cotainer_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container2.png", TEXTURE_2D_GAMMA_ALPHA)};
     GLuint _wood_texture{TEXTURE_MANAGER.load_texture("../resources/textures/wood.png", TEXTURE_2D_GAMMA)};
     FrameBuffer _fb_hdr;
-    FrameBuffer _fb_pingpong;
+    FrameBuffer _fb_pingpong_h;
+    FrameBuffer _fb_pingpong_v;
     VertexArray _cube_va;
     std::vector<glm::vec3> lightPositions;
     std::vector<glm::vec3> lightColors;
 
     QuadRender _debug;
+    QuadRender _blur{"../glsl/bloom/blur.fs"};
+    QuadRender _mixture{"../glsl/bloom/mixture.fs"};
 
     GLuint buffer_0{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
     GLuint buffer_1{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
+    GLuint buffer_h{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
+    GLuint buffer_v{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
 
     void render_cube()
     {
@@ -107,13 +113,17 @@ private:
         _fb_hdr.bind();
         _fb_hdr.attach_color_texture(0, buffer_0);
         _fb_hdr.attach_color_texture(1, buffer_1);
-        _fb_hdr.create_render_object(_width*2, _height*2);
-        _fb_hdr.active_draw_buffers({GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1});
-        _fb_hdr.unbind();
+        _fb_hdr.create_render_object(_width * 2, _height * 2);
+        _fb_hdr.active_draw_buffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1});
+        _fb_pingpong_h.bind();
+        _fb_pingpong_h.attach_color_texture(0, buffer_h);
+        _fb_pingpong_v.bind();
+        _fb_pingpong_v.attach_color_texture(0, buffer_v);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        _mixture._sp.use();
+        _mixture._sp.set_sampler(0, "scene");
+        _mixture._sp.set_sampler(1, "bloomBlur");
 
-        // _fb_pingpong.bind();
-        // _fb_pingpong.attach_color_texture(TEXTURE_MANAGER.generate_texture_buffer(800, 600, TEXTURE_2D_HDR));
-        // _fb_pingpong.attach_color_texture(TEXTURE_MANAGER.generate_texture_buffer(800, 600, TEXTURE_2D_HDR));
     }
 
     void scene_render()
@@ -195,58 +205,59 @@ private:
 
     virtual void render_loop() override
     {
-        // _fb_hdr.bind();
+        _fb_hdr.bind();
         scene_render();
-        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // _debug.render_texture(buffer_0);
+
+        _fb_pingpong_h.bind();
+        _blur.render_texture(buffer_1);
+
+        int amount = 50;
+        for (int i = 1; i < amount; i++)
+        {
+            _blur._sp.set_uniform<int>("horizontal", int(i%2));
+            if (i % 2)
+            {
+                _fb_pingpong_v.bind();
+                _blur.render_texture(buffer_h);
+            }
+            else 
+            {
+                _fb_pingpong_h.bind();
+                _blur.render_texture(buffer_v);           
+            }
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        _mixture.render_texture({buffer_0, buffer_v});
 
     }
 };
 
-class TWidget : public GLWidget
+class mixTureWidget : public GLWidget
 {
-    ShaderProgram s{"../glsl/bloom/test.vs", "../glsl/bloom/test.fs"};
-    VertexArray vao;
-
+public:
+    mixTureWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+private:
+    QuadRender _mixture{"../glsl/bloom/mixture.fs"};
+    GLuint _cotainer{TEXTURE_MANAGER.load_texture("../resources/textures/container.jpg", TEXTURE_2D_RGB)};
+    GLuint _face{TEXTURE_MANAGER.load_texture("../resources/textures/awesomeface.png", TEXTURE_2D_RGBA)};
     virtual void application() override
     {
-        float vertices_with_color[] = {
-    // 位置              // 颜色
-     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // 右下
-    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // 左下
-     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // 顶部
-};
-        GLuint VBO = BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(vertices_with_color), vertices_with_color);
-        BufferLayout layout;
-        layout.add_attribute(GL_FLOAT, 3);
-        layout.add_attribute(GL_FLOAT, 3);
-        vao.attach_vertex_buffer(layout, VBO);
+        _mixture._sp.use();
+        _mixture._sp.set_sampler(0, "scene");
+        _mixture._sp.set_sampler(1, "bloomBlur");
     }
-
     virtual void render_loop() override
     {
-        s.use();
-        vao.bind();
-        // s.set_uniform("lights[0].Position", lightPositions[0]);
-        // s.set_uniform("lights[0].Color", lightColors[0]);
-        // s.set_uniform("lights[1].Position", lightPositions[1]);
-        // s.set_uniform("lights[1].Color", lightColors[1]);
-
-
-
-        
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        glUseProgram(0);
+        glDisable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
+        _mixture._sp.use();
+        _mixture.render_texture({_cotainer, _face});
     }
-public:
-    TWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
-
 };
-
 
 int main()
 {
-    // TWidget w{800,600,"bloom"};
+    // mixTureWidget w{800,600,"bloom"};
     BloomWidget w{800,600,"bloom"};
     w.render();
     return 0;

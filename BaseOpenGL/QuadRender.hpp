@@ -1,11 +1,10 @@
 #include "ShaderProgram.hpp"
 #include "VertexArray.hpp"
 #include "Buffer.hpp"
+#include <vector>
 
 class QuadRender
 {
-    ShaderProgram _sp;
-    VertexArray _va;
     static std::string default_vs_src;
     static std::string default_fs_src;
     void set_up_va()
@@ -29,6 +28,8 @@ class QuadRender
         );
     }
 public:
+    ShaderProgram _sp;
+    VertexArray _va;
     QuadRender(std::string_view fs_path)
     {
         _sp.load_vs_src(default_vs_src);
@@ -51,6 +52,19 @@ public:
         _va.bind();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    void render_texture(const std::vector<GLuint>& textures)
+    {
+        glDisable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
+        _sp.use();
+        _va.bind();
+        for (int i = 0; i < textures.size(); i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i);
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+        }
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 };

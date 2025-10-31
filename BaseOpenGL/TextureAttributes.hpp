@@ -70,7 +70,7 @@ inline auto TEXTURE_2D_GAMMA_ALPHA = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_ALPHA = [] () -> TextureAttributes
+inline auto TEXTURE_2D_RGBA = [] () -> TextureAttributes
 {
     return TextureAttributes
     {

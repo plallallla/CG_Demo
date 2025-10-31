@@ -88,7 +88,7 @@ public:
             }
             case 4:
             {
-                attributes = TEXTURE_2D_ALPHA;
+                attributes = TEXTURE_2D_RGBA;
                 break;
             }
             default:
