@@ -232,32 +232,8 @@ private:
     }
 };
 
-class mixTureWidget : public GLWidget
-{
-public:
-    mixTureWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
-private:
-    QuadRender _mixture{"../glsl/bloom/mixture.fs"};
-    GLuint _cotainer{TEXTURE_MANAGER.load_texture("../resources/textures/container.jpg", TEXTURE_2D_RGB)};
-    GLuint _face{TEXTURE_MANAGER.load_texture("../resources/textures/awesomeface.png", TEXTURE_2D_RGBA)};
-    virtual void application() override
-    {
-        _mixture._sp.use();
-        _mixture._sp.set_sampler(0, "scene");
-        _mixture._sp.set_sampler(1, "bloomBlur");
-    }
-    virtual void render_loop() override
-    {
-        glDisable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT);
-        _mixture._sp.use();
-        _mixture.render_texture({_cotainer, _face});
-    }
-};
-
 int main()
 {
-    // mixTureWidget w{800,600,"bloom"};
     BloomWidget w{800,600,"bloom"};
     w.render();
     return 0;
