@@ -6,35 +6,34 @@
 #include "Texture.hpp"
 #include "FrameBuffer.hpp"
 #include "QuadRender.hpp"
+#include <glm/detail/qualifier.hpp>
 #include <string>
 #include <xlocale/_stdio.h>
-
-std::vector<glm::vec3> lightPositions
-{
-   glm::vec3( 0.0f, 0.5f,  1.5f),
-   glm::vec3(-4.0f, 0.5f, -3.0f),
-   glm::vec3( 3.0f, 0.5f,  1.0f),
-   glm::vec3(-.8f,  2.4f, -1.0f),
-};
-std::vector<glm::vec3> lightColors
-{
-    glm::vec3(5.0f, 5.0f, 5.0f),
-    glm::vec3(10.0f, 0.0f, 0.0f),
-    glm::vec3(0.0f, 0.0f, 15.0f),
-    glm::vec3(0.0f, 5.0f, 0.0f),
-};
 
 class BloomWidget : public GLWidget
 {
 public:
-    BloomWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) {}
+    BloomWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    {
+        lightPositions.push_back(glm::vec3( 0.0f, 0.5f,  1.5f));
+        lightPositions.push_back(glm::vec3(-4.0f, 0.5f, -3.0f));
+        lightPositions.push_back(glm::vec3( 3.0f, 0.5f,  1.0f));
+        lightPositions.push_back(glm::vec3(-.8f,  2.4f, -1.0f));
+        lightColors.push_back(glm::vec3(5.0f,   5.0f,  5.0f));
+        lightColors.push_back(glm::vec3(10.0f,  0.0f,  0.0f));
+        lightColors.push_back(glm::vec3(0.0f,   0.0f,  15.0f));
+        lightColors.push_back(glm::vec3(0.0f,   5.0f,  0.0f));
+    }
 private:
     ShaderProgram _shader{"../glsl/bloom/bloom.vs", "../glsl/bloom/bloom.fs"};
+    ShaderProgram _light{"../glsl/bloom/bloom.vs", "../glsl/bloom/light.fs"};
     GLuint _cotainer_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container2.png", TEXTURE_2D_GAMMA_ALPHA)};
     GLuint _wood_texture{TEXTURE_MANAGER.load_texture("../resources/textures/wood.png", TEXTURE_2D_GAMMA)};
     FrameBuffer _fb_hdr;
     FrameBuffer _fb_pingpong;
     VertexArray _cube_va;
+    std::vector<glm::vec3> lightPositions;
+    std::vector<glm::vec3> lightColors;
 
     QuadRender _debug;
 
@@ -109,6 +108,7 @@ private:
         _fb_hdr.attach_color_texture(0, buffer_0);
         _fb_hdr.attach_color_texture(1, buffer_1);
         _fb_hdr.create_render_object(_width*2, _height*2);
+        _fb_hdr.active_draw_buffers({GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1});
         _fb_hdr.unbind();
 
         // _fb_pingpong.bind();
@@ -132,20 +132,19 @@ private:
         _shader.active_sampler(0, _wood_texture);
         _shader.set_uniform("viewPos", CAMERA.get_position());
 
-        // create one large cube that acts as the floor
-        glm::mat4 model(1.0);
+        glm::mat4 model;
+       // create one large cube that acts as the floor
+        _shader.active_sampler(0, _wood_texture);
+        model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, -1.0f, 0.0));
         model = glm::scale(model, glm::vec3(12.5f, 0.5f, 12.5f));
         _shader.set_uniform("model", model);
         render_cube();
-
         // then create multiple cubes as the scenery
         _shader.active_sampler(0, _cotainer_texture);
-
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
         model = glm::scale(model, glm::vec3(0.5f));
-        _shader.set_uniform("model", model);
         _shader.set_uniform("model", model);
         render_cube();
 
@@ -179,14 +178,27 @@ private:
         model = glm::scale(model, glm::vec3(0.5f));
         _shader.set_uniform("model", model);
         render_cube();
+
+        _light.use();
+        _light.set_uniform("projection", get_projection());
+        _light.set_uniform("view", CAMERA.get_view_matrix());
+        for (int i = 0; i < 4; i++)
+        {
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(lightPositions[i]));
+            model = glm::scale(model, glm::vec3(0.25f));
+            _light.set_uniform("model", model);
+            _light.set_uniform("lightColor", lightColors[i]);
+            render_cube();
+        }
     }
 
     virtual void render_loop() override
     {
-        _fb_hdr.bind();
+        // _fb_hdr.bind();
         scene_render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        _debug.render_texture(buffer_1);
+        // glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // _debug.render_texture(buffer_0);
 
     }
 };
@@ -220,16 +232,6 @@ class TWidget : public GLWidget
         // s.set_uniform("lights[1].Position", lightPositions[1]);
         // s.set_uniform("lights[1].Color", lightColors[1]);
 
-
-
-        s.set_uniform("lights[0].Position", lightPositions[0]);
-        s.set_uniform("lights[0].Color", lightColors[0]);
-        s.set_uniform("lights[1].Position", lightPositions[1]);
-        s.set_uniform("lights[1].Color", lightColors[1]);
-        s.set_uniform("lights[2].Position", lightPositions[2]);
-        s.set_uniform("lights[2].Color", lightColors[2]);
-        s.set_uniform("lights[3].Position", lightPositions[3]);
-        s.set_uniform("lights[3].Color", lightColors[3]);
 
 
         
