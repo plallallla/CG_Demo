@@ -21,9 +21,13 @@ struct Input
         _last_x = width / 2.0f;
         _last_y = height / 2.0f;
     }
+    float get_current_time()
+    {
+        return static_cast<float>(glfwGetTime());
+    }
     void update_time()
     {
-        float current = static_cast<float>(glfwGetTime());
+        float current = get_current_time();
         _delta_time = current - _last_frame_ts;
         _last_frame_ts = current;
     }

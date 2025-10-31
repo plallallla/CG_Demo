@@ -46,7 +46,6 @@ public:
     void render_texture(GLuint texture)
     {
         glDisable(GL_DEPTH_TEST);
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         _sp.use();
         _va.bind();

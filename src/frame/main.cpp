@@ -1,14 +1,17 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
+#include "Input.hpp"
 #include "ShaderProgram.hpp"
 #include "TextureAttributes.hpp"
 #include "VertexArray.hpp"
 #include "Buffer.hpp"
 #include "Texture.hpp"
 
-#include "Frame.hpp"
+#include "FrameBuffer.hpp"
 
 #include "QuadRender.hpp"
+
+
 
 float cubeVertices[] = {
         // positions          // texture Coords
@@ -81,7 +84,8 @@ class FrameWidget : public GLWidget
     VertexArray _va_plane;
     VertexArray _va_quad;
 
-    QuadRender _debug{"../glsl/frame/framebuffers_screen.fs"};
+    QuadRender _debug;
+    // QuadRender _debug{"../glsl/frame/framebuffers_screen.fs"};
 
     GLuint _cube_texture{TEXTURE_MANAGER.load_texture("../resources/textures/container.jpg")};
     GLuint _floor_texture{TEXTURE_MANAGER.load_texture("../resources/textures/metal.png")};
@@ -92,10 +96,11 @@ class FrameWidget : public GLWidget
 
 
     GLuint framebuffer;
-    GLuint textureColorbuffer;
+    GLuint textureColorbuffer_0;
+    GLuint textureColorbuffer_1;
     GLuint deepth;
 
-    FrameBuffer _frame{_width, _height};
+    FrameBuffer _frame;
 
 
     virtual void application() override
@@ -121,21 +126,26 @@ class FrameWidget : public GLWidget
             layout_22, 
             BUFFER.generate_buffer(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices)
         );
-        _sp.add_sampler("texture1", 1);
+        _sp.set_sampler(1, "texture1");
 
-        textureColorbuffer = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_RGB);
-        deepth = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_DEPTH);
+        textureColorbuffer_0 = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_RGB);
+        textureColorbuffer_1 = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_RGB);
+        // deepth = TEXTURE_MANAGER.generate_texture_buffer(_width*2, _height*2, TEXTURE_2D_DEPTH);
 
         _frame.bind();
-        _frame.attach_color_texture(textureColorbuffer);
-        _frame.attach_depth_texture(deepth);
+        _frame.attach_color_texture(0, textureColorbuffer_0);
+        _frame.attach_color_texture(1, textureColorbuffer_1);
+        // _frame.attach_depth_texture(deepth);
+
+        _frame.active_draw_buffers({ GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 });
+        _frame.create_render_object(_width*2,_height*2);
 
 
-        unsigned int rbo;
-        glGenRenderbuffers(1, &rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width*2, _height*2); // use a single renderbuffer object for both a depth AND stencil buffer.
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
+        // unsigned int rbo;
+        // glGenRenderbuffers(1, &rbo);
+        // glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+        // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, _width*2, _height*2); // use a single renderbuffer object for both a depth AND stencil buffer.
+        // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo); // now actually attach it
        
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) LOG.info("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
         
@@ -147,6 +157,7 @@ class FrameWidget : public GLWidget
         glEnable(GL_DEPTH_TEST);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         _sp.use();
         glm::mat4 model;
         _sp.set_uniform("view", CAMERA.get_view_matrix());
@@ -190,21 +201,21 @@ class FrameWidget : public GLWidget
     }
 
 
+    float _last;
+    bool anti{false};
     virtual void render_loop() override
     {
-        // glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
         _frame.bind();
         render_scene();
-        
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // render_texture(textureColorbuffer);
-        // _debug.render_texture(_floor_texture);
-        _debug.render_texture(textureColorbuffer);
+        _frame.unbind();
 
-
-
-        // render_scene();
-
+        auto current = INPUT.get_current_time();
+        if (current - _last > 0.5)
+        {
+            current = _last;
+            anti = !anti;
+        }
+        _debug.render_texture(anti ? textureColorbuffer_0 : textureColorbuffer_1);
 
     }
 public:
