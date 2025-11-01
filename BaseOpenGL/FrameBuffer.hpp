@@ -11,6 +11,11 @@ public:
     inline void bind() const { glBindFramebuffer(GL_FRAMEBUFFER, _id); }
     inline void unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
+    operator GLuint() const
+    {
+        return _id;
+    }
+
     // 传入attachment数组以开启MRT, 如{GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2}
     void active_draw_buffers(const std::vector<GLenum>& buffers) const
     {

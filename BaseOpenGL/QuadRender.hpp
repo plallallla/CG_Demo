@@ -56,8 +56,6 @@ public:
     }
     void render_texture(const std::vector<GLuint>& textures)
     {
-        glDisable(GL_DEPTH_TEST);
-        glClear(GL_COLOR_BUFFER_BIT);
         _sp.use();
         _va.bind();
         for (int i = 0; i < textures.size(); i++)

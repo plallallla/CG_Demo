@@ -155,7 +155,15 @@ private:
 
         // pass2 根据gbuffer数据进行绘制
         // 渲染光照结果
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         _render.render_texture({scene_geometry, scene_normal, scene_albedo});
+        
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, _fb);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, _width*2, _height*2, 0, 0, _width*2, _height*2, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
         // 渲染灯光
         _box.use();
         _cube_va.bind();
