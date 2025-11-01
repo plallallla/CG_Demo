@@ -42,6 +42,7 @@ private:
     ShaderProgram _gbuffer{"../glsl/deferred/gbuffer.vs", "../glsl/deferred/gbuffer.fs"};
     ShaderProgram sp1{"../glsl/model/model.vs", "../glsl/model/model.fs"};
     QuadRender _debug;
+    QuadRender _render{"../glsl/deferred/render.fs"};
     std::vector<glm::vec3> lightPositions;
     std::vector<glm::vec3> lightColors;
     std::vector<glm::vec3> objectPositions;
@@ -69,15 +70,39 @@ private:
     }
     virtual void application() override
     {
+        _fb.bind();
+        _fb.create_render_object(_width*2, _height*2);
         _fb.attach_color_texture(0, scene_geometry);
         _fb.attach_color_texture(1, scene_normal);
         _fb.attach_color_texture(2, scene_albedo);
-        _fb.create_render_object(_width*2, _height*2);
-        _fb.active_draw_buffers({scene_geometry,scene_normal,scene_albedo}); 
+        _fb.active_draw_buffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2}); 
+        _fb.checkFramebufferStatus();
+        _fb.unbind();
+        _render._sp.use();
+        _render._sp.set_sampler(0, "gPosition");
+        _render._sp.set_sampler(1, "gNormal");
+        _render._sp.set_sampler(2, "gAlbedoSpec");
+        const float linear = 0.7f;
+        const float quadratic = 1.8f;
+        for (unsigned int i = 0; i < lightPositions.size(); i++)
+        {
+            _render._sp.set_uniform("lights[" + std::to_string(i) + "].Position", lightPositions[i]);
+            _render._sp.set_uniform("lights[" + std::to_string(i) + "].Color", lightColors[i]);
+            _render._sp.set_uniform("lights[" + std::to_string(i) + "].Linear", linear);
+            _render._sp.set_uniform("lights[" + std::to_string(i) + "].Quadratic", quadratic);
+        }
+        _render._sp.set_uniform("viewPos", CAMERA.get_position());
     }
     virtual void render_loop() override
     {
-        render_scene(sp1);
+        // pass1 渲染获取gbuffer数据
+        _fb.bind();
+        render_scene(_gbuffer);
+        _fb.unbind();
+        // _debug.render_texture(scene_geometry);
+        // _debug.render_texture(scene_normal);
+        // _debug.render_texture(scene_albedo);
+        _render.render_texture({scene_geometry, scene_normal, scene_albedo});
     }
 };
 
