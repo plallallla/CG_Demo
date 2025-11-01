@@ -28,6 +28,20 @@ inline auto TEXTURE_2D_RGB = [] () -> TextureAttributes
     };
 }();
 
+inline auto TEXTURE_2D_RGBA16F = [] () -> TextureAttributes
+{
+    return TextureAttributes
+    {
+        GL_TEXTURE_2D,
+        GL_REPEAT, GL_REPEAT, // warp
+        GL_LINEAR, GL_LINEAR, // filter
+        GL_RGBA16F,
+        GL_RGBA, 
+        GL_UNSIGNED_BYTE, 
+        true
+    };
+}();
+
 inline auto TEXTURE_2D_SRGB = [] () -> TextureAttributes
 {
     return TextureAttributes

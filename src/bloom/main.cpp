@@ -41,8 +41,8 @@ private:
     QuadRender _blur{"../glsl/bloom/blur.fs"};
     QuadRender _mixture{"../glsl/bloom/mixture.fs"};
 
-    GLuint buffer_0{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
-    GLuint buffer_1{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
+    GLuint buffer_scene{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
+    GLuint buffer_highlight{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
     GLuint buffer_h{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
     GLuint buffer_v{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_HDR)};
 
@@ -111,8 +111,8 @@ private:
         _shader.set_sampler(0, "diffuseTexture");
 
         _fb_hdr.bind();
-        _fb_hdr.attach_color_texture(0, buffer_0);
-        _fb_hdr.attach_color_texture(1, buffer_1);
+        _fb_hdr.attach_color_texture(0, buffer_scene);
+        _fb_hdr.attach_color_texture(1, buffer_highlight);
         _fb_hdr.create_render_object(_width * 2, _height * 2);
         _fb_hdr.active_draw_buffers({GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1});
         _fb_pingpong_h.bind();
@@ -209,7 +209,7 @@ private:
         scene_render();
 
         _fb_pingpong_h.bind();
-        _blur.render_texture(buffer_1);
+        _blur.render_texture(buffer_highlight);
 
         int amount = 50;
         for (int i = 1; i < amount; i++)
@@ -227,7 +227,7 @@ private:
             }
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        _mixture.render_texture({buffer_0, buffer_v});
+        _mixture.render_texture({buffer_scene, buffer_v});
 
     }
 };
