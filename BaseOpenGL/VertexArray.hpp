@@ -49,6 +49,14 @@ static inline auto P_LAYOUT = []() -> BufferLayout
     return layout;
 }();
 
+static inline auto PN_LAYOUT = []() -> BufferLayout
+{
+    BufferLayout layout;
+    layout.add_attribute(GL_FLOAT, 3); // position
+    layout.add_attribute(GL_FLOAT, 3); // normal
+    return layout;
+}();
+
 static inline auto PT_LAYOUT = []() -> BufferLayout
 {
     BufferLayout layout;
