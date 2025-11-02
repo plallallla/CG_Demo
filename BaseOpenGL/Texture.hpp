@@ -106,7 +106,7 @@ public:
             height, 
             0, 
             attributes._format._image, 
-            attributes._format._pixel,
+            GL_UNSIGNED_BYTE, 
             data
         );
         if (attributes._mipmap) glGenerateMipmap(attributes._target);
@@ -145,7 +145,7 @@ public:
             height, 
             0, 
             attributes._format._image, 
-            attributes._format._pixel,
+            GL_UNSIGNED_BYTE, 
             data
         );
         if (attributes._mipmap) glGenerateMipmap(attributes._target);
@@ -177,18 +177,7 @@ public:
             unsigned char *data = stbi_load(path[i].data(), &width, &height, &nrChannels, 0);
             if (data)
             {
-                glTexImage2D
-                (
-                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
-                    0,
-                    attributes._format._internal,
-                    width,
-                    height,
-                    0,
-                    attributes._format._image,
-                    attributes._format._pixel,
-                    data
-                );
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
                 stbi_image_free(data);
             }
             else
