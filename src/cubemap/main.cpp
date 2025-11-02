@@ -142,8 +142,9 @@ class CubeWidhet : public GLWidget
 {
     ShaderProgram _cube_shader{"../glsl/skybox/cubemaps.vs", "../glsl/skybox/cubemaps.fs"};
     ShaderProgram _normal_reflect_shader{"../glsl/skybox/env.vs", "../glsl/skybox/env_reflect.fs"};
-    ShaderProgram _normal_s_shader{"../glsl/skybox/cubemaps.vs", "../glsl/skybox/cubemaps.fs"};
+    ShaderProgram _normal_refract_shader{"../glsl/skybox/env.vs", "../glsl/skybox/env_refract.fs"};
     ShaderProgram _sky_shader{"../glsl/skybox/skybox.vs", "../glsl/skybox/skybox.fs"};
+    
     GLuint _wood_texture;
     GLuint _sky_texture;
     VertexArray _cube_va;
@@ -167,6 +168,7 @@ class CubeWidhet : public GLWidget
         _cube_shader.set_sampler(0, "texture1");
         _sky_shader.set_sampler(0, "skybox");
         _normal_reflect_shader.set_sampler(0, "skybox");
+        _normal_refract_shader.set_sampler(0, "skybox");
     }
 
     void render_cube()
@@ -180,6 +182,18 @@ class CubeWidhet : public GLWidget
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
 
+    void render_refract()
+    {
+        _normal_refract_shader.use();
+        _normal_refract_shader.set_uniform("model", glm::mat4(1.0));
+        _normal_refract_shader.set_uniform("view", CAMERA.get_view_matrix());
+        _normal_refract_shader.set_uniform("projection", get_projection());
+        _normal_refract_shader.set_uniform("cameraPos", CAMERA.get_position());
+        _normal_refract_shader.active_sampler(0, _sky_texture, GL_TEXTURE_CUBE_MAP);
+        _cube_normal_va.bind();
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
+
     void render_reflect()
     {
         _normal_reflect_shader.use();
@@ -187,7 +201,7 @@ class CubeWidhet : public GLWidget
         _normal_reflect_shader.set_uniform("view", CAMERA.get_view_matrix());
         _normal_reflect_shader.set_uniform("projection", get_projection());
         _normal_reflect_shader.set_uniform("cameraPos", CAMERA.get_position());
-        _normal_reflect_shader.active_sampler(0, _wood_texture);
+        _normal_reflect_shader.active_sampler(0, _sky_texture, GL_TEXTURE_CUBE_MAP);
         _cube_normal_va.bind();
         glDrawArrays(GL_TRIANGLES, 0, 36);
     }
@@ -206,7 +220,8 @@ class CubeWidhet : public GLWidget
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
-        render_reflect();
+        render_refract();
+        // render_reflect();
         // render_cube();
         glDepthFunc(GL_LEQUAL);
         render_box();
