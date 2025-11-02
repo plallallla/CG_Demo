@@ -66,7 +66,7 @@ public:
         }
         GLuint textureID;
         glGenTextures(1, &textureID);
-        TextureAttributes attributes;
+        TextureAttributes2D attributes;
         int width, height, nrComponents;
         unsigned char* data = stbi_load(path.data(), &width, &height, &nrComponents, 0);
         if (!data)
@@ -112,14 +112,14 @@ public:
         if (attributes._need_mipmap) glGenerateMipmap(attributes._target);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
-        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
-        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._max_filtering);
+        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._filtering_min);
+        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filtering_max);
         glBindTexture(attributes._target, textureID);
         _loaded_textures[path.data()] = textureID;
         return textureID;
     }
 
-    GLuint load_texture(std::string_view path, const TextureAttributes& attributes = TEXTURE_2D_RGB)
+    GLuint load_texture(std::string_view path, const TextureAttributes2D& attributes = TEXTURE_2D_RGB)
     {
         if (_loaded_textures.find(path.data()) != _loaded_textures.end())
         {
@@ -151,15 +151,50 @@ public:
         if (attributes._need_mipmap) glGenerateMipmap(attributes._target);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
-        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
-        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._max_filtering);
+        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._filtering_min);
+        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filtering_max);
         glBindTexture(attributes._target, textureID);
         _loaded_textures[path.data()] = textureID;
         stbi_image_free(data);
         return textureID;
     }
 
-    GLuint generate_texture_buffer(int width, int height, const TextureAttributes& attributes)
+    // order:
+    // +X (right)
+    // -X (left)
+    // +Y (top)
+    // -Y (bottom)
+    // +Z (front) 
+    // -Z (back)
+    GLuint load_cube_texture(const std::vector<std::string_view>& path, const TextureAttributesCubeMap& attributes = TEXTURE_CUBE_RGB)
+    {
+        GLuint id;
+        glGenTextures(1, &id);
+        glBindTexture(attributes._target, id);
+        int width, height, nrChannels;
+        for (int i = 0; i < path.size(); i++)
+        {
+            unsigned char *data = stbi_load(path[i].data(), &width, &height, &nrChannels, 0);
+            if (data)
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+                stbi_image_free(data);
+            }
+            else
+            {
+                std::cout << "Cubemap texture failed to load at path: " << path[i] << std::endl;
+                stbi_image_free(data);
+            }
+        }
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, attributes._filtering_min);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, attributes._filtering_max);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, attributes._wrap_s);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, attributes._wrap_t);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, attributes._wrap_r);    
+        return id;
+    }
+
+    GLuint generate_texture_buffer(int width, int height, const TextureAttributes2D& attributes)
     {
         GLuint id;
         glGenTextures(1, &id);
@@ -167,8 +202,8 @@ public:
         glTexImage2D(attributes._target, 0, attributes._internal_format, width, height, 0, attributes._image_format, GL_UNSIGNED_BYTE, NULL);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap_s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap_t);
-        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._min_filtering);
-        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._max_filtering);
+        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._filtering_min);
+        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filtering_max);
         return id;
     }
 };

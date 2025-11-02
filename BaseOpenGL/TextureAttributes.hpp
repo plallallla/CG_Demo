@@ -1,22 +1,22 @@
 #pragma once
 #include <glad/glad.h>
 
-struct TextureAttributes
+struct TextureAttributes2D
 {
     GLuint _target = GL_TEXTURE_2D;
     GLuint _wrap_s = GL_REPEAT;
     GLuint _wrap_t = GL_REPEAT;
-    GLuint _min_filtering = GL_LINEAR;
-    GLuint _max_filtering = GL_LINEAR;
+    GLuint _filtering_min = GL_LINEAR;
+    GLuint _filtering_max = GL_LINEAR;
     GLuint _internal_format = GL_RGB;
     GLuint _image_format = GL_RGB;
     GLuint _pixel_type = GL_UNSIGNED_BYTE;
     bool _need_mipmap = true;
 };
 
-inline auto TEXTURE_2D_RGB = [] () -> TextureAttributes
+inline auto TEXTURE_2D_RGB = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -28,9 +28,9 @@ inline auto TEXTURE_2D_RGB = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_RGBA16F = [] () -> TextureAttributes
+inline auto TEXTURE_2D_RGBA16F = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -42,9 +42,9 @@ inline auto TEXTURE_2D_RGBA16F = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_SRGB = [] () -> TextureAttributes
+inline auto TEXTURE_2D_SRGB = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -56,9 +56,9 @@ inline auto TEXTURE_2D_SRGB = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes
+inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -70,9 +70,9 @@ inline auto TEXTURE_2D_GAMMA = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_GAMMA_ALPHA = [] () -> TextureAttributes
+inline auto TEXTURE_2D_GAMMA_ALPHA = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -84,9 +84,9 @@ inline auto TEXTURE_2D_GAMMA_ALPHA = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_RGBA = [] () -> TextureAttributes
+inline auto TEXTURE_2D_RGBA = [] () -> TextureAttributes2D
 {
-    return TextureAttributes
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -98,8 +98,8 @@ inline auto TEXTURE_2D_RGBA = [] () -> TextureAttributes
     };
 }();
 
-inline auto TEXTURE_2D_GRAY = []() -> TextureAttributes {
-    return TextureAttributes
+inline auto TEXTURE_2D_GRAY = []() -> TextureAttributes2D {
+    return
     {
         GL_TEXTURE_2D,
         GL_REPEAT, GL_REPEAT, // warp
@@ -111,8 +111,8 @@ inline auto TEXTURE_2D_GRAY = []() -> TextureAttributes {
     };
 }();
 
-inline auto TEXTURE_2D_DEPTH = []() -> TextureAttributes {
-    return TextureAttributes
+inline auto TEXTURE_2D_DEPTH = []() -> TextureAttributes2D {
+    return
     {
         GL_TEXTURE_2D,
         GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, // warp
@@ -124,11 +124,38 @@ inline auto TEXTURE_2D_DEPTH = []() -> TextureAttributes {
     };
 }();
 
-inline auto TEXTURE_2D_HDR = []() -> TextureAttributes {
-    return TextureAttributes
+inline auto TEXTURE_2D_HDR = []() -> TextureAttributes2D {
+    return
     {
         GL_TEXTURE_2D,
         GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, // warp
+        GL_NEAREST, GL_NEAREST, // filter
+        GL_RGBA16F, 
+        GL_RGBA,
+        GL_FLOAT,
+        false
+    };
+}();
+
+struct TextureAttributesCubeMap
+{
+    GLuint _target = GL_TEXTURE_CUBE_MAP;
+    GLuint _wrap_s = GL_REPEAT;
+    GLuint _wrap_t = GL_REPEAT;
+    GLuint _wrap_r = GL_REPEAT;
+    GLuint _filtering_min = GL_LINEAR;
+    GLuint _filtering_max = GL_LINEAR;
+    GLuint _internal_format = GL_RGB;
+    GLuint _image_format = GL_RGB;
+    GLuint _pixel_type = GL_UNSIGNED_BYTE;
+    bool _need_mipmap = true;
+};
+
+inline auto TEXTURE_CUBE_RGB = []() -> TextureAttributesCubeMap {
+    return
+    {
+        GL_TEXTURE_2D,
+        GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, // warp
         GL_NEAREST, GL_NEAREST, // filter
         GL_RGBA16F, 
         GL_RGBA,

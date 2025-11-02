@@ -1,12 +1,12 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
-#include "ShaderProgram.h"
-#include "Vertex.h"
+#include "ShaderProgram.hpp"
+#include "TextureAttributes.hpp"
+#include "VertexArray.hpp"
 #include "Texture.hpp"
+#include "Buffer.hpp"
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>
-#include <memory>
-#include <sstream>
 
 float vertices[] = 
 {
@@ -83,21 +83,16 @@ class LightWidget : public GLWidget
     VertexArray _va;
     glm::vec3 _light_pos = glm::vec3(1.2f, 1.0f, 2.0f);
     glm::vec3 _light_color = glm::vec3(1.0f, 1.0f, 1.0f);
-    unsigned int spec_texture = TEXTURE_MANAGER.load_texture("../resources/textures/container2_specular.png");
-    unsigned int diff_texture = TEXTURE_MANAGER.load_texture("../resources/textures/container2.png");
+    unsigned int spec_texture = TEXTURE_MANAGER.load_texture("../resources/textures/container2_specular.png", TEXTURE_2D_RGBA);
+    unsigned int diff_texture = TEXTURE_MANAGER.load_texture("../resources/textures/container2.png", TEXTURE_2D_RGBA);
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
 
-        VertexBuffer vb;
-        vb.set_data(sizeof(vertices), vertices);
-        vb.add_layout(GL_FLOAT, 3, true);
-        vb.add_layout(GL_FLOAT, 3, true);
-        vb.add_layout(GL_FLOAT, 2, true);
-        _va.addVertexBuffer(std::make_shared<VertexBuffer>(vb));
+        _va.attach_vertex_buffer(PNT_LAYOUT, BUFFER.generate_vertex_buffer(sizeof(vertices), vertices));
         _shader.use();
-        _shader.add_sampler("material.diffuse", diff_texture);
-        _shader.add_sampler("material.specular", spec_texture);
+        _shader.set_sampler(0, "material.diffuse");
+        _shader.set_sampler(1, "material.specular");
     }
 
     virtual void render_loop() override
@@ -106,7 +101,8 @@ class LightWidget : public GLWidget
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         _va.bind();
         _shader.use();
-        _shader.active_samplers();
+        _shader.active_sampler(0, diff_texture);
+        _shader.active_sampler(1, spec_texture);
         
         // some info
         _shader.set_uniform("viewPos", CAMERA.get_position());

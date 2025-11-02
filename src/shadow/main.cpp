@@ -12,7 +12,7 @@
 #include "ShadowScene.hpp"
 #include "GLWidget.hpp"
 #include "Texture.hpp"
-#include "Frame.hpp"
+#include "FrameBuffer.hpp"
 #include "GLWidget.hpp"
 #include "TextureAttributes.hpp"
 #include "QuadRender.hpp"
@@ -27,7 +27,7 @@ private:
     glm::vec3 lightPos{-2.0f, 4.0f, -1.0f};
     ShadowScene scene;
     glm::mat4 model = glm::mat4(1.0f);
-    FrameBuffer fb{1024,1024};
+    FrameBuffer fb;
     GLuint depth_texture = TEXTURE_MANAGER.generate_texture_buffer(1024*2, 1024*2, TEXTURE_2D_DEPTH);
     glm::mat4 lightProjection, lightView;
     glm::mat4 lightSpaceMatrix;
@@ -54,8 +54,8 @@ private:
         depth_shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
 
         shader.use();
-        shader.add_sampler("diffuseTexture", woodTexture);
-        shader.add_sampler("shadowMap", depth_texture);
+        shader.set_sampler(0, "diffuseTexture");
+        shader.set_sampler(1, "shadowMap");
         shader.set_uniform<glm::vec3>("lightPos", lightPos);
         shader.set_uniform<glm::mat4>("lightSpaceMatrix", lightSpaceMatrix);
 
@@ -63,7 +63,7 @@ private:
 
     virtual void render_loop() override
     {
-        fb.update_viewport();
+        glViewport(0, 0, 1024*2, 1024*2);
         glClear(GL_DEPTH_BUFFER_BIT);
         fb.bind();
         depth_shader.use();
@@ -72,24 +72,45 @@ private:
         glCullFace(GL_BACK); //不要忘记设回原先的面剔除
         fb.unbind();
 
+        glViewport(0, 0, _width, _height);
+
         // debug.render_texture(depth_texture);
 
 
-        glViewport(0, 0, _width, _height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
         shader.set_uniform<glm::mat4>("projection", get_projection());
         shader.set_uniform<glm::mat4>("view", CAMERA.get_view_matrix());
         shader.set_uniform<glm::vec3>("viewPos", CAMERA.get_position());
-        shader.active_samplers();
+        shader.active_sampler(0, woodTexture);
+        shader.active_sampler(1, depth_texture);
         scene.render(shader);//pass2 实际渲染到屏幕上
     }
 
 };
 
+class PointShadow : public GLWidget
+{
+    virtual void application() override
+    {
+    }
+
+    virtual void render_loop() override
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+    }
+
+public:
+    PointShadow(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    {
+
+    }
+};
+
 int main()
 {
-    std::string title{"shadow"};
-    shadowWidget widget(800,600,title);
+    shadowWidget widget(800,600,"shadow");
     widget.render();
+    return 0;
 }

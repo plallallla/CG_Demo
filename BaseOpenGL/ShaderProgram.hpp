@@ -80,10 +80,10 @@ public:
         utility::checkCompileErrors(_id, "PROGRAME");
     }
 
-    void active_sampler(int offset, GLuint texture) const
+    void active_sampler(int offset, GLuint texture, GLenum target = GL_TEXTURE_2D) const
     {
         glActiveTexture(GL_TEXTURE0 + offset);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(target, texture);
     }
 
     template<typename T>

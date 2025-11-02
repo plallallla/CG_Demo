@@ -9,7 +9,6 @@ class ShadowScene
 {
     VertexArray plane_va;
     VertexArray cube_va;
-    VertexArray quad_va;
     void renderPlane()
     {
         plane_va.bind();
@@ -88,13 +87,15 @@ public:
             cube_va.attach_vertex_buffer(PNT_LAYOUT, vb);
         }
     }
-    void render(const ShaderProgram &shader)
+    void render(const ShaderProgram &shader, GLuint plane_texture, GLuint cube_texture)
     {
         glm::mat4 model = glm::mat4(1.0f);
-        shader.set_uniform<glm::mat4>("model", model);
         // floor
+        shader.set_uniform<glm::mat4>("model", model);
+        shader.active_sampler(0, plane_texture);
         renderPlane();
         // cubes
+        shader.active_sampler(0, cube_texture);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(0.0f, 1.5f, 0.0));
         model = glm::scale(model, glm::vec3(0.5f));

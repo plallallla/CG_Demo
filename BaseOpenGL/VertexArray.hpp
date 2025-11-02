@@ -42,6 +42,21 @@ struct BufferLayout
     }
 };
 
+static inline auto P_LAYOUT = []() -> BufferLayout
+{
+    BufferLayout layout;
+    layout.add_attribute(GL_FLOAT, 3); // position
+    return layout;
+}();
+
+static inline auto PT_LAYOUT = []() -> BufferLayout
+{
+    BufferLayout layout;
+    layout.add_attribute(GL_FLOAT, 3); // position
+    layout.add_attribute(GL_FLOAT, 2); // texture uv
+    return layout;
+}();
+
 static inline auto PNT_LAYOUT = []() -> BufferLayout
 {
     BufferLayout layout;
