@@ -50,7 +50,7 @@ uniform vec3 view_pos;
 void main()
 {
     vec3 ambient_color = texture(material.ambient, vs_out.UV).rgb;
-    ambient_color = 0.1 * ambient(ambient_color);
+    ambient_color = 0.075 * ambient(ambient_color);
 
     vec3 normal = normalize(vs_out.Normal);
     vec3 light_dir = normalize(light.position - vs_out.FragPos);
@@ -62,6 +62,6 @@ void main()
     vec3 specular_color = light.color * texture(material.specular, vs_out.UV).rgb;
     specular_color = specular(specular_color, material.shininess, normal, light_dir, view_dir);
 
-    frag_color = vec4(ambient_color * 0.05 + diffuse_color * 0.4 + specular_color * 0.5, 1.0);
+    frag_color = vec4(ambient_color + diffuse_color * 0.4 + specular_color * 0.5, 1.0);
 
 }
