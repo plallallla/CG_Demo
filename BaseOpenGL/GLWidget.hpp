@@ -11,7 +11,6 @@
 
 class GLWidget
 {
-    GLFWwindow* window{nullptr};
     /**
      * @brief 应用程序函数
      * 
@@ -24,6 +23,7 @@ class GLWidget
     virtual void render_loop() = 0;
 
 protected:
+    GLFWwindow* window{nullptr};
     int _width;
     int _height;
 

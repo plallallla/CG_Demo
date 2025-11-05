@@ -5,6 +5,10 @@
 #include "VertexArray.hpp"
 #include "Buffer.hpp"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 class CWidhet : public GLWidget
 {
     // ShaderProgram _sp{"../glsl/playground/trans.vs", "../glsl/playground/basic.fs"};
@@ -150,9 +154,133 @@ public:
     }
 };
 
+class guiWidhet : public GLWidget
+{
+    bool checkbox_value;
+    float slider_value;
+    char text_buffer[256] = "Hello, ImGui!";
+    virtual void application() override
+    {
+
+    }
+
+    virtual void render_loop() override
+    {
+        // 开始新的 ImGui 帧
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::Begin(u8"我的控制面板");
+
+        ImGui::Text(u8"这是一个带控件的 ImGui 窗口");
+        ImGui::Checkbox(u8"启用功能", &checkbox_value);
+
+        ImGui::SliderFloat(u8"亮度", &slider_value, 0.0f, 1.0f);
+
+        ImGui::InputText(u8"输入文本", text_buffer, sizeof(text_buffer));
+
+        int counter = 0;
+        if (ImGui::Button(u8"点击我!")) {
+            counter++;
+        }
+        ImGui::SameLine();
+        ImGui::Text(u8"已点击 %d 次", counter);
+
+        ImGui::Spacing();
+        if (ImGui::Button("重置计数器")) {
+            counter = 0;
+        }
+
+        ImGui::End();        
+        // 渲染
+        int display_w, display_h;
+        glfwGetFramebufferSize(window, &display_w, &display_h);
+        glViewport(0, 0, display_w, display_h);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());        
+    }
+
+public:
+    guiWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    {
+        // 初始化 ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void)io;
+
+        // 设置样式（可选：Dark / Light）
+        ImGui::StyleColorsDark();
+
+        // 初始化平台和渲染后端
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本        
+    }
+};
+
+class guiTriangleWidhet : public GLWidget
+{
+    float r{255};
+    float g{255};
+    float b{255};
+    std::vector<float> only_vertices
+    {
+        // 位置            
+        0.5f, -0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        0.0f,  0.5f, 0.0f,
+    };
+    VertexArray _va;
+    ShaderProgram _sp{"../glsl/playground/gui.vs", "../glsl/playground/gui.fs"};
+    virtual void application() override
+    {
+        _va.attach_vertex_buffer(P_LAYOUT, 
+            BUFFER.generate_vertex_buffer(only_vertices.size() * sizeof(float), only_vertices.data()));
+    }
+
+    virtual void render_loop() override
+    {
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        _va.bind();
+        _sp.use();
+        _sp.set_uniform("color", glm::vec3(r, g, b));
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // 开始新的 ImGui 帧
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        ImGui::SliderFloat(u8"r", &r, 0.0, 255.0);
+        ImGui::SliderFloat(u8"g", &g, 0.0, 255.0);
+        ImGui::SliderFloat(u8"b", &b, 0.0, 255.0);
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());        
+    }
+
+public:
+    guiTriangleWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    {
+        // 初始化 ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void)io;
+
+        // 设置样式（可选：Dark / Light）
+        ImGui::StyleColorsDark();
+
+        // 初始化平台和渲染后端
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本        
+    }
+};
+
 int main()
 {
-    CWidhet c{800, 600, "1111"};
+    guiTriangleWidhet c{800, 600, "1111"};
     c.render();
     return 0;
 }
