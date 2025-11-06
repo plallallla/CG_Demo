@@ -16,7 +16,7 @@ struct Input
     bool _first = true;
     float _last_frame_ts;
     float _delta_time;
-    bool _use_mouse{true};
+    bool _debug{true};
     void init(unsigned int width, unsigned int height)
     {
         _last_x = width / 2.0f;
@@ -37,12 +37,16 @@ struct Input
 
 inline void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
+    if (!INPUT._debug)
+    {
+        return;
+    }    
     CAMERA.process_mouse_scroll(static_cast<float>(yoffset));
 }
 
 inline void mouse_move_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
-    if (!INPUT._use_mouse)
+    if (!INPUT._debug)
     {
         return;
     }
@@ -69,6 +73,10 @@ inline void mouse_move_callback(GLFWwindow* window, double xposIn, double yposIn
 
 inline void keyboard_input_callback(GLFWwindow *window)
 {
+    if (!INPUT._debug)
+    {
+        return;
+    }    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
@@ -109,5 +117,9 @@ inline void keyboard_input_callback(GLFWwindow *window)
 
 inline void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
+    if (!INPUT._debug)
+    {
+        return;
+    }    
     glViewport(0, 0, width, height);
 }

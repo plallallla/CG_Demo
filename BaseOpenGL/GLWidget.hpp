@@ -101,7 +101,7 @@ public:
                 ImGui::NewFrame();
                 ImGui::Begin("debug", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding 
                     | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
-                INPUT._use_mouse = ImGui::IsWindowCollapsed();
+                INPUT._debug = ImGui::IsWindowCollapsed();
                 ImGui::SetWindowPos(ImVec2(0, 0));           
                 ImGui::SetWindowSize(ImVec2(_debug_width, _height));           
                 gui_operation();
