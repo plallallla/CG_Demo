@@ -1,13 +1,16 @@
 /**
  * @file GLWidget.hpp
  * @author pnghfng
- * @brief 封装了一些glad与glfw的初始化操作
+ * @brief 封装了一些glad与glfw的初始化操作,增加imgui
  * @date 2025-10-18
  * 
  */
 #pragma once
 #include "Input.hpp"
 #include <mutex>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 class GLWidget
 {
@@ -21,11 +24,17 @@ class GLWidget
      * 
      */
     virtual void render_loop() = 0;
+    /**
+     * @brief gui操作
+     * 
+     */
+    virtual void gui_operation();
 
 protected:
     GLFWwindow* window{nullptr};
     int _width;
     int _height;
+    bool _gui{ false };
 
     inline glm::mat4 get_projection()
     {
@@ -62,6 +71,18 @@ public:
         }
         CAMERA.init();
         INPUT.init(width, height);
+        // 初始化 ImGui
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO();
+        (void)io;
+
+        // 设置样式（可选：Dark / Light）
+        ImGui::StyleColorsDark();
+
+        // 初始化平台和渲染后端
+        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本         
     }
 
     void render()
@@ -72,6 +93,15 @@ public:
             keyboard_input_callback(window);
             INPUT.update_time();
             render_loop();
+            if (_gui)
+            {
+                ImGui_ImplOpenGL3_NewFrame();
+                ImGui_ImplGlfw_NewFrame();
+                ImGui::NewFrame();
+                gui_operation();
+                ImGui::Render();
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());                
+            }
             glfwSwapBuffers(window);
             glfwPollEvents();
         }

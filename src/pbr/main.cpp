@@ -193,9 +193,77 @@ public:
     }
 };
 
+class PraticeWidget : public GLWidget
+{
+    Sphere _s;
+    ShaderProgram _sp{"../glsl/pbr/geometry.vs", "../glsl/pbr/point_cook_torrance.fs"};
+    std::vector<glm::vec3> lightPositions
+    {
+        glm::vec3(-10.0f,  10.0f, 10.0f),
+        glm::vec3( 10.0f,  10.0f, 10.0f),
+        glm::vec3(-10.0f, -10.0f, 10.0f),
+        glm::vec3( 10.0f, -10.0f, 10.0f),
+    };
+    std::vector<glm::vec3> lightColors
+    {
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f)
+    };
+
+    float roughness{0.5};
+    float metallic{0.5};
+
+    virtual void application() override
+    {
+        glEnable(GL_DEPTH_TEST);
+        _sp.use();
+        _sp.set_uniform("ao", 1.0f);
+        _sp.set_uniform("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+        _sp.set_uniform("projection", get_projection());
+
+    }
+
+    virtual void render_loop() override
+    {
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        _sp.use();
+        _sp.set_uniform("view", CAMERA.get_view_matrix());
+        _sp.set_uniform("view_pos", CAMERA.get_position());
+        _sp.set_uniform("ambient_intensity", 0.05f);
+
+        glm::mat4 model = glm::mat4(1.0f);
+
+        _sp.set_uniform("metallic", metallic);
+        _sp.set_uniform("roughness", roughness);
+
+        model = glm::mat4(1.0f);
+        _sp.set_uniform("model", model);
+        _sp.set_uniform("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
+        for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
+        {
+            glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
+            newPos = lightPositions[i];
+            _sp.set_uniform("light_array[" + std::to_string(i) + "].position", newPos);
+            _sp.set_uniform("light_array[" + std::to_string(i) + "].color", lightColors[i]);
+        }
+        _s.render();
+    }
+
+public:
+    PraticeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    {
+    }
+};
+
 int main()
 {
-    MapWidhet c{800, 600, "pbr"};
+    // LightWidhet c{800, 600, "pbr"};
+    PraticeWidget c{800, 600, "pbr"};
     c.render();
     return 0;
 }
