@@ -16,6 +16,7 @@ struct Input
     bool _first = true;
     float _last_frame_ts;
     float _delta_time;
+    bool _use_mouse{true};
     void init(unsigned int width, unsigned int height)
     {
         _last_x = width / 2.0f;
@@ -41,6 +42,10 @@ inline void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yof
 
 inline void mouse_move_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
+    if (!INPUT._use_mouse)
+    {
+        return;
+    }
     int rightButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
     int leftButtonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     float xpos = static_cast<float>(xposIn);

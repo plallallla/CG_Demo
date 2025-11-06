@@ -254,8 +254,14 @@ class PraticeWidget : public GLWidget
         _s.render();
     }
 
+    virtual void gui_operation() override
+    {
+        ImGui::SliderFloat(u8"metallic", &metallic, 0.05, 1.0);
+        ImGui::SliderFloat(u8"roughness", &roughness, 0.05, 1.0);
+    }    
+
 public:
-    PraticeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    PraticeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title,true) 
     {
     }
 };
@@ -263,7 +269,7 @@ public:
 int main()
 {
     // LightWidhet c{800, 600, "pbr"};
-    PraticeWidget c{800, 600, "pbr"};
+    PraticeWidget c{900, 720, "pbr"};
     c.render();
     return 0;
 }

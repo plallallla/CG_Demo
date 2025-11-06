@@ -28,12 +28,13 @@ class GLWidget
      * @brief gui操作
      * 
      */
-    virtual void gui_operation();
+    virtual void gui_operation() {}
 
 protected:
     GLFWwindow* window{nullptr};
     int _width;
     int _height;
+    int _debug_width{300};
     bool _gui{ false };
 
     inline glm::mat4 get_projection()
@@ -42,7 +43,7 @@ protected:
     }
 
 public:
-    GLWidget(int width, int height, std::string_view title) : _width(width), _height(height)
+    GLWidget(int width, int height, std::string_view title, bool gui = false) : _width(width), _height(height), _gui(gui)
     {
         static std::once_flag gloable_init;
         std::call_once(gloable_init, [&] () 
@@ -98,7 +99,13 @@ public:
                 ImGui_ImplOpenGL3_NewFrame();
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
+                ImGui::Begin("debug", nullptr, ImGuiWindowFlags_AlwaysUseWindowPadding 
+                    | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+                INPUT._use_mouse = ImGui::IsWindowCollapsed();
+                ImGui::SetWindowPos(ImVec2(0, 0));           
+                ImGui::SetWindowSize(ImVec2(_debug_width, _height));           
                 gui_operation();
+                ImGui::End();
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());                
             }

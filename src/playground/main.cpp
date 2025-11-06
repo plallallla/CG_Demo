@@ -249,32 +249,31 @@ class guiTriangleWidhet : public GLWidget
         _sp.use();
         _sp.set_uniform("color", glm::vec3(r, g, b));
         glDrawArrays(GL_TRIANGLES, 0, 3);
-        // 开始新的 ImGui 帧
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+    }
+
+    virtual void gui_operation() override
+    {
         ImGui::SliderFloat(u8"r", &r, 0.0, 255.0);
         ImGui::SliderFloat(u8"g", &g, 0.0, 255.0);
         ImGui::SliderFloat(u8"b", &b, 0.0, 255.0);
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());        
     }
 
+
 public:
-    guiTriangleWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    guiTriangleWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title,true) 
     {
-        // 初始化 ImGui
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
-        (void)io;
+        // // 初始化 ImGui
+        // IMGUI_CHECKVERSION();
+        // ImGui::CreateContext();
+        // ImGuiIO& io = ImGui::GetIO();
+        // (void)io;
 
-        // 设置样式（可选：Dark / Light）
-        ImGui::StyleColorsDark();
+        // // 设置样式（可选：Dark / Light）
+        // ImGui::StyleColorsDark();
 
-        // 初始化平台和渲染后端
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
-        ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本        
+        // // 初始化平台和渲染后端
+        // ImGui_ImplGlfw_InitForOpenGL(window, true);
+        // ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本        
     }
 };
 
