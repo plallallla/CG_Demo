@@ -93,57 +93,26 @@ class PointShadow : public GLWidget
 {
     ShaderProgram shader{"../glsl/shadow/point_shadows.vs" ,"../glsl/shadow/point_shadows.fs"};
     ShaderProgram depth_shader{"../glsl/shadow/point_shadows_depth.vs", "../glsl/shadow/point_shadows_depth.gs" ,"../glsl/shadow/point_shadows_depth.fs"};    
-    // GLuint depth_texture = TEXTURE_MANAGER.generate_cube_texture_buffer(1024, 1024);
-    // FrameBuffer frame;
-    glm::vec3 lightPos{0.0f, 0.5f, 0.0f};
+    GLuint depth_texture = TEXTURE_MANAGER.generate_cube_texture_buffer(1024, 1024);
+    FrameBuffer frame;
+    glm::vec3 lightPos{0.0f, 1.5f, -5.0f};
     ShadowScene scene;
-
-    unsigned int woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
+    GLuint woodTexture = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
     
-    const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
-    unsigned int depthMapFBO;
-    unsigned int depthCubemap;
-
     virtual void application() override
     {
 #ifdef __APPLE__//times 2 for apple retina
         _width *= 2;
         _height *= 2;
 #endif        
-        // glEnable(GL_DEPTH_TEST);
-        // frame.bind();
-        // frame.attach_depth_texture_array(depth_texture);
-        // frame.set_draw_read(GL_NONE, GL_NONE);
-        // frame.unbind();
+        glEnable(GL_DEPTH_TEST);
+        frame.bind();
+        frame.attach_depth_texture_array(depth_texture);
+        frame.set_draw_read(GL_NONE, GL_NONE);
+        frame.unbind();
         shader.use();
         shader.set_sampler(0, "diffuseTexture");
         shader.set_sampler(1, "depthMap");
-
-
-    glEnable(GL_DEPTH_TEST);
-    // glEnable(GL_CULL_FACE);
-
-    // configure depth map FBO
-    // -----------------------
-
-        glGenFramebuffers(1, &depthMapFBO);
-        // create depth cubemap texture
-        glGenTextures(1, &depthCubemap);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-        for (unsigned int i = 0; i < 6; ++i)
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH*2, SHADOW_HEIGHT*2, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        // attach depth texture as FBO's depth buffer
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
-        glDrawBuffer(GL_NONE);
-        glReadBuffer(GL_NONE);
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-   
     }
 
     virtual void render_loop() override
@@ -155,7 +124,7 @@ class PointShadow : public GLWidget
         // -----------------------------------------------
         float near_plane = 1.0f;
         float far_plane = 25.0f;
-        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, near_plane, far_plane);
+        glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), (float)1024 / (float)1024, near_plane, far_plane);
         std::vector<glm::mat4> shadowTransforms;
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
         shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -166,15 +135,19 @@ class PointShadow : public GLWidget
 
         // 1. render scene to depth cubemap
         // --------------------------------
-        glViewport(0, 0, SHADOW_WIDTH*2, SHADOW_HEIGHT*2);
-        glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+        glViewport(0, 0, 1024, 1024);
+        frame.bind();
         glClear(GL_DEPTH_BUFFER_BIT);
         depth_shader.use();
         for (unsigned int i = 0; i < 6; ++i)
+        {
             depth_shader.set_uniform("shadowMatrices[" + std::to_string(i) + "]", shadowTransforms[i]);
+        }
         depth_shader.set_uniform("far_plane", far_plane);
         depth_shader.set_uniform("lightPos", lightPos);
+        glCullFace(GL_FRONT);//改变面剔除以解决阴影悬浮问题
         scene.render(depth_shader);
+        glCullFace(GL_BACK);//改变面剔除以解决阴影悬浮问题
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         // 2. render scene as normal 
@@ -182,7 +155,6 @@ class PointShadow : public GLWidget
         glViewport(0, 0, _width, _height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         shader.use();
-        glm::mat4 projection = glm::perspective(glm::radians(CAMERA.get_zoom()), (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT, 0.1f, 100.0f);
         shader.set_uniform("projection", get_projection());
         shader.set_uniform("view", CAMERA.get_view_matrix());
         // set lighting uniforms
@@ -192,12 +164,20 @@ class PointShadow : public GLWidget
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, woodTexture);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, depth_texture);
         scene.render(shader);
     }
 
+    virtual void gui_operation() override
+    {
+        ImGui::SliderFloat(u8"light.x", &lightPos.x, -10.0, 10.0);
+        ImGui::SliderFloat(u8"light.y", &lightPos.y, 0.05, 10.0);
+        ImGui::SliderFloat(u8"light.z", &lightPos.z, -10.0, 10.0);
+    }
+
+
 public:
-    PointShadow(int width, int height, std::string_view title) : GLWidget(width,height,title) 
+    PointShadow(int width, int height, std::string_view title) : GLWidget(width,height,title,true) 
     {
 
     }
