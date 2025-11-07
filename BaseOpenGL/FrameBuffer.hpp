@@ -11,6 +11,12 @@ public:
     inline void bind() const { glBindFramebuffer(GL_FRAMEBUFFER, _id); }
     inline void unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
+    void set_draw_read(GLenum draw, GLenum read)
+    {
+        glDrawBuffer(draw);
+        glReadBuffer(read);        
+    }
+
     operator GLuint() const
     {
         return _id;
@@ -30,6 +36,11 @@ public:
     void attach_depth_texture(GLuint texture)
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+    }
+
+    void attach_depth_texture_array(GLuint texture)
+    {
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, texture, 0);
     }
 
     void attach_stencil_texture(GLuint texture)

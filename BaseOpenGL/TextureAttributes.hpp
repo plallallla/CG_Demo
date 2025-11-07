@@ -141,10 +141,21 @@ inline auto TEXTURE_2D_HDR = []() -> TextureAttributes
 inline auto TEXTURE_CUBE_RGB = []() -> TextureAttributes {
     return
     {
-        GL_TEXTURE_2D,
+        GL_TEXTURE_CUBE_MAP,
+        {GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE}, // warp
+        {GL_LINEAR, GL_LINEAR}, // filter
+        {GL_RGBA16F, GL_RGBA, GL_FLOAT},
+        false
+    };
+}();
+
+inline auto TEXTURE_CUBE_DEPTH = []() -> TextureAttributes {
+    return
+    {
+        GL_TEXTURE_CUBE_MAP,
         {GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE}, // warp
         {GL_NEAREST, GL_NEAREST}, // filter
-        {GL_RGBA16F, GL_RGBA, GL_FLOAT},
+        {GL_DEPTH_COMPONENT, GL_DEPTH_COMPONENT, GL_FLOAT},
         false
     };
 }();

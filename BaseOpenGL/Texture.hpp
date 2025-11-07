@@ -206,6 +206,34 @@ public:
         glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filter._max);
         return id;
     }
+
+    GLuint generate_cube_texture_buffer(int width, int height, const TextureAttributes& attributes = TEXTURE_CUBE_DEPTH)
+    {
+        GLuint id;
+        glGenTextures(1, &id);
+        glBindTexture(attributes._target, id);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            glTexImage2D
+            (
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
+                0, 
+                attributes._format._internal, 
+                width, 
+                height, 
+                0, 
+                attributes._format._image, 
+                attributes._format._pixel, 
+                NULL
+            );
+        }
+        glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filter._max);
+        glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._filter._min);
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap._s);
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap._t);
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_R, attributes._wrap._r);                
+        return id;
+    }    
 };
 
 
