@@ -5,6 +5,8 @@
 #include "Texture.hpp"
 #include "VertexArray.hpp"
 
+#include "SkyboxRender.hpp"
+
     float cubeVertices[] = {
         // positions          // texture Coords
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -140,6 +142,9 @@
 
 class CubeWidhet : public GLWidget
 {
+
+    SkyboxRender skybox;
+
     ShaderProgram _cube_shader{"../glsl/skybox/cubemaps.vs", "../glsl/skybox/cubemaps.fs"};
     ShaderProgram _normal_reflect_shader{"../glsl/skybox/env.vs", "../glsl/skybox/env_reflect.fs"};
     ShaderProgram _normal_refract_shader{"../glsl/skybox/env.vs", "../glsl/skybox/env_refract.fs"};
@@ -220,12 +225,13 @@ class CubeWidhet : public GLWidget
     {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
-        render_refract();
+        // render_refract();
         // render_reflect();
-        // render_cube();
-        glDepthFunc(GL_LEQUAL);
-        render_box();
-        glDepthFunc(GL_LESS);
+        render_cube();
+        skybox.render_texture(_sky_texture, get_projection());
+        // glDepthFunc(GL_LEQUAL);
+        // render_box();
+        // glDepthFunc(GL_LESS);
     }
 
 public:

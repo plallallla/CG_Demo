@@ -1,9 +1,9 @@
 #include "Camera.hpp"
 #include "GLWidget.hpp"
 #include "ShaderProgram.hpp"
-#include "Sphere.hpp"
 #include "Texture.hpp"
 #include <OpenGL/gltypes.h>
+#include "Shape.hpp"
 
 class LightWidhet : public GLWidget
 {
@@ -262,6 +262,102 @@ class PraticeWidget : public GLWidget
 
 public:
     PraticeWidget(int width, int height, std::string_view title) : GLWidget(width,height,title,true) 
+    {
+    }
+};
+
+class IBLWidget : public GLWidget
+{
+    Sphere _s;
+    Cube _cube;
+    ShaderProgram pbrShader{"../glsl/ibl/pbr.vs", "../glsl/ibl/pbr.fs"};
+    ShaderProgram equirectangularToCubemapShader{"../glsl/ibl/cube.vs", "../glsl/ibl/cube.fs"};
+    ShaderProgram backgroundShader{"../glsl/ibl/background.vs", "../glsl/ibl/background.fs"};
+    GLuint hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
+    std::vector<glm::vec3> lightPositions
+    {
+        glm::vec3(-10.0f,  10.0f, 10.0f),
+        glm::vec3( 10.0f,  10.0f, 10.0f),
+        glm::vec3(-10.0f, -10.0f, 10.0f),
+        glm::vec3( 10.0f, -10.0f, 10.0f),
+    };
+    std::vector<glm::vec3> lightColors
+    {
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f),
+        glm::vec3(300.0f, 300.0f, 300.0f)
+    };
+
+    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    std::vector<glm::mat4> captureViews
+    {
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+    };    
+    float roughness{0.5};
+    float metallic{0.5};
+    int nrRows = 7;
+    int nrColumns = 7;
+    float spacing = 2.5;
+
+    GLuint envCubemap = TEXTURE_MANAGER.generate_cube_texture_buffer(512, 512, TEXTURE_CUBE_RGB);
+
+    unsigned int captureFBO;
+    unsigned int captureRBO;    
+    virtual void application() override
+    {
+        glEnable(GL_DEPTH_TEST);
+
+        glGenFramebuffers(1, &captureFBO);
+        glGenRenderbuffers(1, &captureRBO);
+        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
+
+        // convert HDR equirectangular environment map to cubemap equivalent    
+        equirectangularToCubemapShader.use();
+        equirectangularToCubemapShader.set_sampler(0, "equirectangularMap");
+        equirectangularToCubemapShader.set_uniform("projection", captureProjection);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, hdrTexture);        
+
+        glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
+        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            equirectangularToCubemapShader.set_uniform("view", captureViews[i]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            _cube.render();
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);        
+
+        int scrWidth, scrHeight;
+        glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+        glViewport(0, 0, scrWidth, scrHeight);      
+
+        pbrShader.use();
+        pbrShader.set_uniform("projection", get_projection());
+        backgroundShader.use();
+        backgroundShader.set_uniform("projection", get_projection());        
+    }
+
+    virtual void render_loop() override
+    {
+
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    }
+
+public:
+    IBLWidget(int width, int height, std::string_view title) : GLWidget(width,height,title) 
     {
     }
 };
