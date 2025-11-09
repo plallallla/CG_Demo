@@ -5,6 +5,8 @@
 #include <OpenGL/gltypes.h>
 #include "Shape.hpp"
 
+#include "SkyboxRender.hpp"
+
 class LightWidhet : public GLWidget
 {
     Sphere _s;
@@ -116,6 +118,7 @@ class MapWidhet : public GLWidget
     float spacing = 2.5;
     virtual void application() override
     {
+
         glEnable(GL_DEPTH_TEST);
         _sp.use();
         _sp.set_uniform("ao", 1.0f);
@@ -268,12 +271,14 @@ public:
 
 class IBLWidget : public GLWidget
 {
+
+    SkyboxRender _skybox;
     Sphere _s;
     Cube _cube;
     ShaderProgram pbrShader{"../glsl/ibl/pbr.vs", "../glsl/ibl/pbr.fs"};
     ShaderProgram equirectangularToCubemapShader{"../glsl/ibl/cube.vs", "../glsl/ibl/cube.fs"};
     ShaderProgram backgroundShader{"../glsl/ibl/background.vs", "../glsl/ibl/background.fs"};
-    GLuint hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
+    GLuint hdrTexture;
     std::vector<glm::vec3> lightPositions
     {
         glm::vec3(-10.0f,  10.0f, 10.0f),
@@ -313,6 +318,11 @@ class IBLWidget : public GLWidget
     {
         glEnable(GL_DEPTH_TEST);
 
+
+
+        stbi_set_flip_vertically_on_load(true);        
+        hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
+        
         glGenFramebuffers(1, &captureFBO);
         glGenRenderbuffers(1, &captureRBO);
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
@@ -353,7 +363,7 @@ class IBLWidget : public GLWidget
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        _skybox.render_texture(envCubemap, get_projection());
     }
 
 public:
@@ -365,7 +375,7 @@ public:
 int main()
 {
     // LightWidhet c{800, 600, "pbr"};
-    PraticeWidget c{900, 720, "pbr"};
+    IBLWidget c{900, 720, "pbr"};
     c.render();
     return 0;
 }
