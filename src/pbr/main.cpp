@@ -315,16 +315,12 @@ class IBLWidget : public GLWidget
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
 
-
-
         stbi_set_flip_vertically_on_load(true);        
         hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
         hdr_pass.execute(hdrTexture);
         di_pass.execute(hdr_pass);
-
-        int scrWidth, scrHeight;
-        glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
-        glViewport(0, 0, scrWidth, scrHeight);        
+        
+        update_viewport();
 
         pbrShader.use();
         pbrShader.set_sampler(0, "irradianceMap");
