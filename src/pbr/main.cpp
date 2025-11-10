@@ -284,7 +284,8 @@ class IBLWidget : public GLWidget
     ShaderProgram irradianceShader{"../glsl/ibl/cube.vs", "../glsl/ibl/irradiance_convolution.fs"};
 
 
-    HdrToCubeRender hdr_pass;
+    HdrCubeRender hdr_pass;
+    DiffuseIrradianceIBL di_pass;
 
     GLuint hdrTexture;
     std::vector<glm::vec3> lightPositions
@@ -346,7 +347,8 @@ class IBLWidget : public GLWidget
         backgroundShader.use();
         backgroundShader.set_sampler(0, "environmentMap");
 
-        hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/appart.hdr");
+        hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
+        // hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/appart.hdr");
 
         // pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
         // ----------------------------------------------------------------------------------------------
@@ -385,6 +387,9 @@ class IBLWidget : public GLWidget
             _cube.render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // di_pass.execute(hdr_pass);
+        // irradianceMap = di_pass;
 
         // then before rendering, configure the viewport to the original framebuffer's screen dimensions
         int scrWidth, scrHeight;
@@ -463,8 +468,8 @@ class IBLWidget : public GLWidget
             _s.render();
         }
 
-        _skybox.render_texture(envCubemap, get_projection());
-        // _skybox.render_texture(irradianceMap, get_projection());
+        // _skybox.render_texture(envCubemap, get_projection());
+        _skybox.render_texture(irradianceMap, get_projection());
     }
 
 public:

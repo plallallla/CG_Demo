@@ -9,10 +9,32 @@
 class PrecomputedRender
 {
 protected:
+
+    inline static const std::vector<glm::mat4> capture_views = []() -> auto
+    {
+        return std::vector<glm::mat4>
+        {
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
+            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+        };
+    }();
+
+    inline static const glm::mat4 capture_projection = [] () -> auto
+    {
+        return glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
+    }();
+
     GLuint _result = 0;
     FrameBuffer _fb;
-    Cube _cube;
+    Cube _cube_shape;
+    GLuint _width;
+    GLuint _height;
 public:
+    PrecomputedRender(GLuint width = 512, GLuint height = 512) : _width{ width }, _height{ height } {}
     virtual void execute(GLuint input = 0) = 0;
     operator GLuint()
     {
@@ -20,42 +42,53 @@ public:
     }
 };
 
-class HdrToCubeRender : public PrecomputedRender
+class HdrCubeRender : public PrecomputedRender
 {
-    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    std::vector<glm::mat4> captureViews
-    {
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-    };
     ShaderProgram _sp{"../glsl/ibl/cube.vs", "../glsl/ibl/cube.fs"};
 public:
-    virtual void execute(GLuint hdr) override
+    HdrCubeRender(GLuint width = 512, GLuint height = 512) : PrecomputedRender{ width, height } {}
+    virtual void execute(GLuint hdr_texture) override
     {
-        _result = TEXTURE_MANAGER.generate_cube_texture_buffer(512, 512, TEXTURE_CUBE_RGB);
+        _result = TEXTURE_MANAGER.generate_cube_texture_buffer(_width, _height, TEXTURE_CUBE_RGB);
+        glViewport(0, 0, _width, _height);
         _sp.use();
         _sp.set_uniform("equirectangularMap", 0);
-        _sp.set_uniform("projection", captureProjection);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, hdr);
-        glViewport(0, 0, 512, 512);
+        _sp.set_uniform("projection", capture_projection);
+        _sp.active_sampler(0, hdr_texture);
         _fb.bind();
         for (unsigned int i = 0; i < 6; ++i)
         {
-            _sp.set_uniform("view", captureViews[i]);
+            _sp.set_uniform("view", capture_views[i]);
             _fb.attach_color_texture(0, _result, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _cube.render();
+            _cube_shape.render();
         }
         _fb.unbind();
     }
 };
 
-class IBL : public PrecomputedRender
+class DiffuseIrradianceIBL : public PrecomputedRender
 {
-
+    ShaderProgram _sp{"../glsl/ibl/cube.vs", "../glsl/ibl/irradiance_convolution.fs"};
+public:
+    DiffuseIrradianceIBL(GLuint width = 64, GLuint height = 64) : PrecomputedRender{ width, height } {}
+    virtual void execute(GLuint cube_texture) override
+    {
+        _result = TEXTURE_MANAGER.generate_cube_texture_buffer(32, 32, TEXTURE_CUBE_RGB_FLOAT);
+        glViewport(0, 0, 32, 32);
+        _fb.bind();
+        _fb.create_render_object(32, 32);
+        _sp.use();
+        _sp.set_sampler(0, "environmentMap");
+        _sp.set_uniform("projection", capture_projection);
+        _sp.active_sampler(0, cube_texture);
+        for (unsigned int i = 0; i < 6; ++i)
+        {
+            _sp.set_uniform("view", capture_views[i]);
+            _fb.attach_color_texture(0, _result, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            _cube_shape.render();
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
 };
