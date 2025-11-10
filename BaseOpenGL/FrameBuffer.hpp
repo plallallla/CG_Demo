@@ -28,9 +28,9 @@ public:
         glDrawBuffers(static_cast<GLsizei>(buffers.size()), buffers.data());
     }
 
-    void attach_color_texture(GLuint offset, GLuint texture)
+    void attach_color_texture(GLuint offset, GLuint texture, GLenum target = GL_TEXTURE_2D)
     {
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + offset, GL_TEXTURE_2D, texture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + offset, target, texture, 0);
     }
 
     void attach_depth_texture(GLuint texture)

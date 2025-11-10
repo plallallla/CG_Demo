@@ -1,11 +1,13 @@
 #include "Camera.hpp"
+#include "FrameBuffer.hpp"
 #include "GLWidget.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
 #include <OpenGL/gltypes.h>
-#include "Shape.hpp"
 
+#include "PrecomputedRender.hpp"
 #include "SkyboxRender.hpp"
+#include "TextureAttributes.hpp"
 
 class LightWidhet : public GLWidget
 {
@@ -95,6 +97,7 @@ public:
     {
     }
 };
+
 
 class MapWidhet : public GLWidget
 {
@@ -280,6 +283,9 @@ class IBLWidget : public GLWidget
     ShaderProgram backgroundShader{"../glsl/ibl/background.vs", "../glsl/ibl/background.fs"};
     ShaderProgram irradianceShader{"../glsl/ibl/cube.vs", "../glsl/ibl/irradiance_convolution.fs"};
 
+
+    HdrToCubeRender hdr_pass;
+
     GLuint hdrTexture;
     std::vector<glm::vec3> lightPositions
     {
@@ -317,18 +323,18 @@ class IBLWidget : public GLWidget
 
     // pbr: setup framebuffer
     // ----------------------
-    unsigned int captureFBO;
+    // unsigned int captureFBO;
+    FrameBuffer captureFBO;
     unsigned int captureRBO;
     unsigned int irradianceMap;
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
-
-
         // configure global opengl state
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+        stbi_set_flip_vertically_on_load(true);        
 
         // build and compile shaders
         // -------------------------
@@ -340,35 +346,7 @@ class IBLWidget : public GLWidget
         backgroundShader.use();
         backgroundShader.set_sampler(0, "environmentMap");
 
-
-
-        glGenFramebuffers(1, &captureFBO);
-        glGenRenderbuffers(1, &captureRBO);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, captureRBO);
-
-        // pbr: load the HDR environment map
-        // ---------------------------------
-        stbi_set_flip_vertically_on_load(true);        
-        hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
-
-
-        // pbr: setup cubemap to render to and attach to framebuffer
-        // ---------------------------------------------------------
-        glGenTextures(1, &envCubemap);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, nullptr);
-        }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR); 
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/appart.hdr");
 
         // pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
         // ----------------------------------------------------------------------------------------------
@@ -383,61 +361,35 @@ class IBLWidget : public GLWidget
             glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
         };
 
-        // pbr: convert HDR equirectangular environment map to cubemap equivalent
-        // ----------------------------------------------------------------------
-        equirectangularToCubemapShader.use();
-        equirectangularToCubemapShader.set_uniform("equirectangularMap", 0);
-        equirectangularToCubemapShader.set_uniform("projection", captureProjection);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, hdrTexture);
 
-        glViewport(0, 0, 512, 512); // don't forget to configure the viewport to the capture dimensions.
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            equirectangularToCubemapShader.set_uniform("view", captureViews[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, envCubemap, 0);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _cube.render();
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        hdr_pass.execute(hdrTexture);
+        envCubemap = hdr_pass;
 
         // pbr: create an irradiance cubemap, and re-scale capture FBO to irradiance scale.
         // --------------------------------------------------------------------------------
-        glGenTextures(1, &irradianceMap);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 32, 32, 0, GL_RGB, GL_FLOAT, nullptr);
-        }
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 32, 32);
-
-        // pbr: solve diffuse integral by convolution to create an irradiance (cube)map.
-        // -----------------------------------------------------------------------------
+        irradianceMap = TEXTURE_MANAGER.generate_cube_texture_buffer(32, 32, TEXTURE_CUBE_RGB_FLOAT);
+        captureFBO.bind();
+        captureFBO.create_render_object(32, 32);
         irradianceShader.use();
         irradianceShader.set_sampler(0, "environmentMap");
         irradianceShader.set_uniform("projection", captureProjection);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-
         glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         for (unsigned int i = 0; i < 6; ++i)
         {
             irradianceShader.set_uniform("view", captureViews[i]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irradianceMap, 0);
+            captureFBO.attach_color_texture(0, irradianceMap, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             _cube.render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // then before rendering, configure the viewport to the original framebuffer's screen dimensions
+        int scrWidth, scrHeight;
+        glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+        glViewport(0, 0, scrWidth, scrHeight);        
 
         // initialize static shader uniforms before rendering
         // --------------------------------------------------
@@ -446,10 +398,7 @@ class IBLWidget : public GLWidget
         backgroundShader.use();
         backgroundShader.set_uniform("projection", get_projection());
 
-        // then before rendering, configure the viewport to the original framebuffer's screen dimensions
-        int scrWidth, scrHeight;
-        glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
-        glViewport(0, 0, scrWidth, scrHeight);
+
       
     }
 
@@ -514,8 +463,8 @@ class IBLWidget : public GLWidget
             _s.render();
         }
 
-        // _skybox.render_texture(envCubemap, get_projection());
-        _skybox.render_texture(irradianceMap, get_projection());
+        _skybox.render_texture(envCubemap, get_projection());
+        // _skybox.render_texture(irradianceMap, get_projection());
     }
 
 public:
