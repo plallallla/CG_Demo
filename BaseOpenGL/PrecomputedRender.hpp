@@ -42,11 +42,11 @@ public:
     }
 };
 
-class HdrCubeRender : public PrecomputedRender
+class EquirectConvertRender : public PrecomputedRender
 {
     ShaderProgram _sp{"../glsl/ibl/cube.vs", "../glsl/ibl/cube.fs"};
 public:
-    HdrCubeRender(GLuint width = 512, GLuint height = 512) : PrecomputedRender{ width, height } {}
+    EquirectConvertRender(GLuint width = 512, GLuint height = 512) : PrecomputedRender{ width, height } {}
     virtual void execute(GLuint hdr_texture) override
     {
         _result = TEXTURE_MANAGER.generate_cube_texture_buffer(_width, _height, TEXTURE_CUBE_RGB);
@@ -74,10 +74,10 @@ public:
     DiffuseIrradianceIBL(GLuint width = 64, GLuint height = 64) : PrecomputedRender{ width, height } {}
     virtual void execute(GLuint cube_texture) override
     {
-        _result = TEXTURE_MANAGER.generate_cube_texture_buffer(32, 32, TEXTURE_CUBE_RGB_FLOAT);
-        glViewport(0, 0, 32, 32);
+        _result = TEXTURE_MANAGER.generate_cube_texture_buffer(_width, _height, TEXTURE_CUBE_RGB_FLOAT);
+        glViewport(0, 0, _width, _height);
         _fb.bind();
-        _fb.create_render_object(32, 32);
+        _fb.create_render_object(_width, _height);
         _sp.use();
         _sp.set_sampler(0, "environmentMap");
         _sp.set_uniform("projection", capture_projection);

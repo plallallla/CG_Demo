@@ -85,6 +85,13 @@ public:
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 150"); // macOS 推荐指定 GLSL 版本         
     }
+    
+    void update_viewport()
+    {
+        int scrWidth, scrHeight;
+        glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
+        glViewport(0, 0, scrWidth, scrHeight);          
+    }    
 
     void render()
     {

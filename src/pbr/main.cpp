@@ -274,20 +274,15 @@ public:
 
 class IBLWidget : public GLWidget
 {
-
     SkyboxRender _skybox;
-    Sphere _s;
-    Cube _cube;
     ShaderProgram pbrShader{"../glsl/ibl/pbr.vs", "../glsl/ibl/pbr.fs"};
-    ShaderProgram equirectangularToCubemapShader{"../glsl/ibl/cube.vs", "../glsl/ibl/cube.fs"};
-    ShaderProgram backgroundShader{"../glsl/ibl/background.vs", "../glsl/ibl/background.fs"};
-    ShaderProgram irradianceShader{"../glsl/ibl/cube.vs", "../glsl/ibl/irradiance_convolution.fs"};
+    Sphere _s;
 
-
-    HdrCubeRender hdr_pass;
+    EquirectConvertRender hdr_pass;
     DiffuseIrradianceIBL di_pass;
 
     GLuint hdrTexture;
+
     std::vector<glm::vec3> lightPositions
     {
         glm::vec3(-10.0f,  10.0f, 10.0f),
@@ -302,32 +297,16 @@ class IBLWidget : public GLWidget
         glm::vec3(300.0f, 300.0f, 300.0f),
         glm::vec3(300.0f, 300.0f, 300.0f)
     };
-
-    glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-    std::vector<glm::mat4> captureViews
-    {
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-        glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-    };    
+  
     float roughness{0.5};
     float metallic{0.5};
     int nrRows = 7;
     int nrColumns = 7;
     float spacing = 2.5;
 
-    GLuint envCubemap = TEXTURE_MANAGER.generate_cube_texture_buffer(512, 512, TEXTURE_CUBE_RGB);
 
-
-    // pbr: setup framebuffer
-    // ----------------------
-    // unsigned int captureFBO;
     FrameBuffer captureFBO;
     unsigned int captureRBO;
-    unsigned int irradianceMap;
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
@@ -335,75 +314,23 @@ class IBLWidget : public GLWidget
         // -----------------------------
         glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
+
+
+
         stbi_set_flip_vertically_on_load(true);        
-
-        // build and compile shaders
-        // -------------------------
-        pbrShader.use();
-        pbrShader.set_sampler(0, "irradianceMap");
-        pbrShader.set_uniform("albedo", glm::vec3{0.5f, 0.0f, 0.0f});
-        pbrShader.set_uniform("ao", 1.0f);
-
-        backgroundShader.use();
-        backgroundShader.set_sampler(0, "environmentMap");
-
         hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
-        // hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/appart.hdr");
-
-        // pbr: set up projection and view matrices for capturing data onto the 6 cubemap face directions
-        // ----------------------------------------------------------------------------------------------
-        glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
-        glm::mat4 captureViews[] =
-        {
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-            glm::lookAt(glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
-        };
-
-
         hdr_pass.execute(hdrTexture);
-        envCubemap = hdr_pass;
+        di_pass.execute(hdr_pass);
 
-        // pbr: create an irradiance cubemap, and re-scale capture FBO to irradiance scale.
-        // --------------------------------------------------------------------------------
-        irradianceMap = TEXTURE_MANAGER.generate_cube_texture_buffer(32, 32, TEXTURE_CUBE_RGB_FLOAT);
-        captureFBO.bind();
-        captureFBO.create_render_object(32, 32);
-        irradianceShader.use();
-        irradianceShader.set_sampler(0, "environmentMap");
-        irradianceShader.set_uniform("projection", captureProjection);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-        glViewport(0, 0, 32, 32); // don't forget to configure the viewport to the capture dimensions.
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        for (unsigned int i = 0; i < 6; ++i)
-        {
-            irradianceShader.set_uniform("view", captureViews[i]);
-            captureFBO.attach_color_texture(0, irradianceMap, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _cube.render();
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // di_pass.execute(hdr_pass);
-        // irradianceMap = di_pass;
-
-        // then before rendering, configure the viewport to the original framebuffer's screen dimensions
         int scrWidth, scrHeight;
         glfwGetFramebufferSize(window, &scrWidth, &scrHeight);
         glViewport(0, 0, scrWidth, scrHeight);        
 
-        // initialize static shader uniforms before rendering
-        // --------------------------------------------------
         pbrShader.use();
+        pbrShader.set_sampler(0, "irradianceMap");
+        pbrShader.set_uniform("albedo", glm::vec3{0.5f, 0.0f, 0.0f});
+        pbrShader.set_uniform("ao", 1.0f);        
         pbrShader.set_uniform("projection", get_projection());
-        backgroundShader.use();
-        backgroundShader.set_uniform("projection", get_projection());
-
-
       
     }
 
@@ -412,9 +339,7 @@ class IBLWidget : public GLWidget
 
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
         // render scene, supplying the convoluted irradiance map to the final shader.
         // ------------------------------------------------------------------------------------------
@@ -422,11 +347,9 @@ class IBLWidget : public GLWidget
         pbrShader.set_uniform("view", CAMERA.get_view_matrix());
         pbrShader.set_uniform("camPos", CAMERA.get_position());
 
-        // bind pre-computed IBL data
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, irradianceMap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, di_pass);
 
-        // render rows*column number of spheres with varying metallic/roughness values scaled by rows and columns respectively
         glm::mat4 model = glm::mat4(1.0f);
         for (int row = 0; row < nrRows; ++row)
         {
@@ -449,10 +372,6 @@ class IBLWidget : public GLWidget
             }
         }
 
-
-        // render light source (simply re-render sphere at light positions)
-        // this looks a bit off as we use the same shader, but it'll make their positions obvious and 
-        // keeps the codeprint small.
         for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
         {
             glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 5.0) * 5.0, 0.0, 0.0);
@@ -468,8 +387,7 @@ class IBLWidget : public GLWidget
             _s.render();
         }
 
-        // _skybox.render_texture(envCubemap, get_projection());
-        _skybox.render_texture(irradianceMap, get_projection());
+        _skybox.render_texture(hdr_pass, get_projection());
     }
 
 public:
