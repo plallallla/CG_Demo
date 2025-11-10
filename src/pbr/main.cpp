@@ -4,6 +4,7 @@
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
 #include <OpenGL/gltypes.h>
+#include <vector>
 
 #include "PrecomputedRender.hpp"
 #include "SkyboxRender.hpp"
@@ -310,15 +311,16 @@ class IBLWidget : public GLWidget
     virtual void application() override
     {
         glEnable(GL_DEPTH_TEST);
-        // configure global opengl state
-        // -----------------------------
-        glEnable(GL_DEPTH_TEST);
         glDepthFunc(GL_LEQUAL); // set depth function to less than AND equal for skybox depth trick.
 
         stbi_set_flip_vertically_on_load(true);        
         hdrTexture = TEXTURE_MANAGER.auto_load_texture("../resources/textures/hdr/newport_loft.hdr");
-        hdr_pass.execute(hdrTexture);
-        di_pass.execute(hdr_pass);
+
+        // hdr_pass.execute(hdrTexture);
+        // di_pass.execute(hdr_pass);
+
+        PrecomputedRender::render_pipe(hdrTexture, {&hdr_pass, &di_pass});
+
         
         update_viewport();
 

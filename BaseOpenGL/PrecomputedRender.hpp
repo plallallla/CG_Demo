@@ -40,6 +40,26 @@ public:
     {
         return _result;
     }
+
+    static inline void render_pipe(GLuint input_texture, std::vector<PrecomputedRender*> renders)
+    {
+        renders[0]->execute(input_texture);
+        for (size_t i = 1; i < renders.size(); i++)
+        {
+            renders[i]->execute(*renders[i - 1]);
+        }
+    }
+
+
+    static inline void render_pipe(GLuint input_texture, std::vector<PrecomputedRender> renders)
+    {
+        renders[0].execute(input_texture);
+        for (size_t i = 1; i < renders.size(); i++)
+        {
+            renders[i].execute(renders[i - 1]);
+        }
+    }    
+
 };
 
 class EquirectConvertRender : public PrecomputedRender
