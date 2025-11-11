@@ -138,6 +138,18 @@ inline auto TEXTURE_2D_HDR = []() -> TextureAttributes
     };
 }();
 
+inline auto TEXTURE_2D_BRDF = []() -> TextureAttributes
+{
+    return
+    {
+        GL_TEXTURE_2D,
+        {GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE}, // warp
+        {GL_LINEAR, GL_LINEAR}, // filter
+        {GL_RG16F, GL_RG, GL_FLOAT},
+        false
+    };
+}();
+
 inline auto TEXTURE_CUBE_RGBA = []() -> TextureAttributes {
     return
     {

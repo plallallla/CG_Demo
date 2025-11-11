@@ -51,10 +51,8 @@ public:
     void create_render_object(int width, int height)
     {
         glGenRenderbuffers(1, &_rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, _rbo);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
     }
 
     bool check_status() const

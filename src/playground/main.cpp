@@ -221,11 +221,18 @@ public:
     }
 };
 
+#include "QuadRender.hpp"
+
 class guiTriangleWidhet : public GLWidget
 {
+
+    QuadRender _render;
+    GLuint _wood = TEXTURE_MANAGER.load_texture("../resources/textures/wood.png");
+
     float r{255};
     float g{255};
     float b{255};
+
     std::vector<float> only_vertices
     {
         // 位置            
@@ -243,12 +250,13 @@ class guiTriangleWidhet : public GLWidget
 
     virtual void render_loop() override
     {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        _va.bind();
-        _sp.use();
-        _sp.set_uniform("color", glm::vec3(r, g, b));
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        // glClear(GL_COLOR_BUFFER_BIT);
+        // _va.bind();
+        // _sp.use();
+        // _sp.set_uniform("color", glm::vec3(r, g, b));
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        _render.render_texture(_wood);
     }
 
     virtual void gui_operation() override
@@ -260,7 +268,7 @@ class guiTriangleWidhet : public GLWidget
 
 
 public:
-    guiTriangleWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title,true) 
+    guiTriangleWidhet(int width, int height, std::string_view title) : GLWidget(width,height,title) 
     {
         // // 初始化 ImGui
         // IMGUI_CHECKVERSION();

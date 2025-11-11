@@ -9,7 +9,6 @@
 
 #include "PrecomputedRender.hpp"
 #include "SkyboxRender.hpp"
-#include "TextureAttributes.hpp"
 
 
 // renderQuad() renders a 1x1 XY quad in NDC
@@ -43,11 +42,11 @@ void renderQuad()
     glBindVertexArray(0);
 }
 
+#include "QuadRender.hpp"
+
 class IBLWidget : public GLWidget
 {
     SkyboxRender _skybox;
-    Sphere _s;
-    Cube _c;
 
     ShaderProgram pbrShader{"../glsl/ibl/pbr.vs", "../glsl/ibl/final_pbr.fs"};
     ShaderProgram prefilterShader{"../glsl/ibl/cube.vs", "../glsl/ibl/prefilter.fs"};
@@ -55,6 +54,7 @@ class IBLWidget : public GLWidget
 
     EquirectConvertRender hdr_pass;
     DiffuseIrradianceIBL di_pass;    
+    BRDF_LUT budf_lut;
 
     SkyboxRender _sky;
 
@@ -85,8 +85,9 @@ class IBLWidget : public GLWidget
         glm::vec3(300.0f, 300.0f, 300.0f)
     };
     
-    unsigned int brdfLUTTexture;
     unsigned int prefilterMap;
+
+    QuadRender _debug;
 
     virtual void application() override
     {
@@ -147,6 +148,8 @@ class IBLWidget : public GLWidget
 
         di_pass.execute(hdr_pass);
 
+        budf_lut.execute();
+
         // pbr: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
         // --------------------------------------------------------------------------------
         unsigned int prefilterMap;
@@ -191,36 +194,9 @@ class IBLWidget : public GLWidget
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                _c.render();
+                Shape::render_sphere();
             }
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // pbr: generate a 2D LUT from the BRDF equations used.
-        // ----------------------------------------------------
-        unsigned int brdfLUTTexture;
-        glGenTextures(1, &brdfLUTTexture);
-
-        // pre-allocate enough memory for the LUT texture.
-        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, 0);
-        // be sure to set wrapping mode to GL_CLAMP_TO_EDGE
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        // then re-configure capture framebuffer object and render screen-space quad with BRDF shader.
-        glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-        glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
-
-        glViewport(0, 0, 512, 512);
-        brdfShader.use();
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        renderQuad();
-
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 
@@ -241,6 +217,8 @@ class IBLWidget : public GLWidget
     virtual void render_loop() override
     {
 
+        // _debug.render_texture(budf_lut);
+        // return;
         // render
         // ------
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -259,7 +237,7 @@ class IBLWidget : public GLWidget
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+        glBindTexture(GL_TEXTURE_2D, budf_lut);
 
         // rusted iron
         glActiveTexture(GL_TEXTURE3);
@@ -276,7 +254,7 @@ class IBLWidget : public GLWidget
         model = glm::mat4(1.0f);
         pbrShader.set_uniform("model", model);
         pbrShader.set_uniform("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-        _s.render();
+        Shape::render_sphere();
 
 
 
@@ -295,7 +273,7 @@ class IBLWidget : public GLWidget
             model = glm::scale(model, glm::vec3(0.5f));
             pbrShader.set_uniform("model", model);
             pbrShader.set_uniform("normalMatrix", glm::transpose(glm::inverse(glm::mat3(model))));
-            _s.render();
+            Shape::render_sphere();
         }
 
         _sky.render_texture(hdr_pass, get_projection());

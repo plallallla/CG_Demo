@@ -30,7 +30,6 @@ protected:
 
     GLuint _result = 0;
     FrameBuffer _fb;
-    Cube _cube_shape;
     GLuint _width;
     GLuint _height;
 public:
@@ -48,17 +47,7 @@ public:
         {
             renders[i]->execute(*renders[i - 1]);
         }
-    }
-
-
-    static inline void render_pipe(GLuint input_texture, std::vector<PrecomputedRender> renders)
-    {
-        renders[0].execute(input_texture);
-        for (size_t i = 1; i < renders.size(); i++)
-        {
-            renders[i].execute(renders[i - 1]);
-        }
-    }    
+    } 
 
 };
 
@@ -81,7 +70,7 @@ public:
             _sp.set_uniform("view", capture_views[i]);
             _fb.attach_color_texture(0, _result, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _cube_shape.render();
+            Shape::render_cube();
         }
         _fb.unbind();
     }
@@ -107,8 +96,28 @@ public:
             _sp.set_uniform("view", capture_views[i]);
             _fb.attach_color_texture(0, _result, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            _cube_shape.render();
+            Shape::render_cube();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+};
+
+class BRDF_LUT : public PrecomputedRender
+{
+    ShaderProgram _sp{"../glsl/ibl/brdf.vs", "../glsl/ibl/brdf.fs"};
+public:
+    BRDF_LUT(GLuint width = 512, GLuint height = 512) : PrecomputedRender{ width, height } {}    
+    virtual void execute(GLuint cube_texture = 0) override
+    {
+        (void)cube_texture;
+        _result = TEXTURE_MANAGER.generate_texture_buffer(_width, _height, TEXTURE_2D_BRDF);       
+        _fb.bind();
+        _fb.create_render_object(_width, _height);
+        _fb.attach_color_texture(0, _result);
+        glViewport(0, 0, _width, _height);
+        _sp.use();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Shape::render_quad();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);        
     }
 };
