@@ -37,7 +37,7 @@ void main()
             nrSamples++;
         }
     }
-    irradiance = PI * irradiance * (1.0 / float(nrSamples));
+    irradiance = PI * irradiance * (1.0 / float(nrSamples));//Irradiance应该存E(n)，这里存的π*E(n)
     
     FragColor = vec4(irradiance, 1.0);
 }
