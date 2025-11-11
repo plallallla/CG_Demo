@@ -87,8 +87,7 @@ public:
             GL_UNSIGNED_BYTE, 
             data
         );
-        if (attributes._mipmap) glGenerateMipmap(attributes._target);
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         _loaded_textures[path.data()] = textureID;
         return textureID;                
     }
@@ -144,8 +143,7 @@ public:
             GL_UNSIGNED_BYTE, 
             data
         );
-        if (attributes._mipmap) glGenerateMipmap(attributes._target);
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         _loaded_textures[path.data()] = textureID;
         return textureID;
     }
@@ -179,8 +177,7 @@ public:
             attributes._format._pixel, 
             data
         );
-        if (attributes._mipmap) glGenerateMipmap(attributes._target);
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         _loaded_textures[path.data()] = textureID;
         stbi_image_free(data);
         return textureID;
@@ -222,7 +219,7 @@ public:
             );
             stbi_image_free(data);            
         }  
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         return id;
     }
 
@@ -242,7 +239,7 @@ public:
             attributes._format._pixel, 
             NULL
         );            
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         return id;
     }
 
@@ -266,17 +263,18 @@ public:
                 NULL
             );
         }
-        bind_wrap_filter(attributes);             
+        bind_wrap_filter_mipmap(attributes);             
         return id;     
     }    
 
-    inline void bind_wrap_filter(const TextureAttributes& attributes)
+    inline void bind_wrap_filter_mipmap(const TextureAttributes& attributes)
     {
         glTexParameteri(attributes._target, GL_TEXTURE_MAG_FILTER, attributes._filter._max);
         glTexParameteri(attributes._target, GL_TEXTURE_MIN_FILTER, attributes._filter._min);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_S, attributes._wrap._s);
         glTexParameteri(attributes._target, GL_TEXTURE_WRAP_T, attributes._wrap._t);
-        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_R, attributes._wrap._r);           
+        glTexParameteri(attributes._target, GL_TEXTURE_WRAP_R, attributes._wrap._r);
+        if (attributes._mipmap) glGenerateMipmap(attributes._target);          
     }
 };
 

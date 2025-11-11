@@ -7,7 +7,7 @@ class FrameBuffer
 {
 public:
     FrameBuffer() { glGenFramebuffers(1, &_id); }
-    ~FrameBuffer() { if (_id) glDeleteFramebuffers(1, &_id); }
+    ~FrameBuffer() { if (_id) glDeleteFramebuffers(1, &_id); if (_rbo) glDeleteRenderbuffers(1, &_rbo); }
     inline void bind() const { glBindFramebuffer(GL_FRAMEBUFFER, _id); }
     inline void unbind() const { glBindFramebuffer(GL_FRAMEBUFFER, 0); }
 
@@ -50,7 +50,7 @@ public:
 
     void create_render_object(int width, int height)
     {
-        glGenRenderbuffers(1, &_rbo);
+        if (!_rbo) glGenRenderbuffers(1, &_rbo);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, _rbo);
     }

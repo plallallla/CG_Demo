@@ -152,7 +152,6 @@ class IBLWidget : public GLWidget
 
         // pbr: create a pre-filter cubemap, and re-scale capture FBO to pre-filter scale.
         // --------------------------------------------------------------------------------
-        unsigned int prefilterMap;
         glGenTextures(1, &prefilterMap);
         glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
         for (unsigned int i = 0; i < 6; ++i)
@@ -194,7 +193,7 @@ class IBLWidget : public GLWidget
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
 
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                Shape::render_sphere();
+                Shape::render_cube();
             }
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -276,7 +275,8 @@ class IBLWidget : public GLWidget
             Shape::render_sphere();
         }
 
-        _sky.render_texture(hdr_pass, get_projection());
+        // _sky.render_texture(hdr_pass, get_projection());
+        _sky.render_texture(prefilterMap, get_projection());
 
     }   
 

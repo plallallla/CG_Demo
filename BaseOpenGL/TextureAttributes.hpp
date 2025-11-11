@@ -183,6 +183,17 @@ inline auto TEXTURE_CUBE_RGB_FLOAT = []() -> TextureAttributes {
     };
 }();
 
+inline auto TEXTURE_CUBE_PREFILTER = []() -> TextureAttributes {
+    return
+    {
+        GL_TEXTURE_CUBE_MAP,
+        {GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE}, // warp
+        {GL_LINEAR, GL_LINEAR}, // filter
+        {GL_RGB16F, GL_RGB, GL_FLOAT},
+        true
+    };
+}();
+
 inline auto TEXTURE_CUBE_RGB = []() -> TextureAttributes {
     return
     {
