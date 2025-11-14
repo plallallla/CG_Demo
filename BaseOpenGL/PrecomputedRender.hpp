@@ -84,13 +84,13 @@ public:
     virtual void execute(GLuint cube_texture) override
     {
         _result = TEXTURE_MANAGER.generate_cube_texture_buffer(_width, _height, TEXTURE_CUBE_RGB_FLOAT);
-        glViewport(0, 0, _width, _height);
         _fb.bind();
         _fb.create_render_object(_width, _height);
+        glViewport(0, 0, _width, _height);
         _sp.use();
         _sp.set_sampler(0, "environmentMap");
         _sp.set_uniform("projection", capture_projection);
-        _sp.active_sampler(0, cube_texture);
+        _sp.active_sampler(0, cube_texture, GL_TEXTURE_CUBE_MAP);
         for (GLuint i = 0; i < 6; ++i)
         {
             _sp.set_uniform("view", capture_views[i]);
@@ -102,22 +102,19 @@ public:
     }
 };
 
-class SpecularIrradianceIBL : public PrecomputedRender
+class SpecularPrefilterIBL : public PrecomputedRender
 {
     ShaderProgram _sp{"../glsl/ibl/cube.vs", "../glsl/ibl/prefilter.fs"};
 public:
-    SpecularIrradianceIBL(GLuint width = 128, GLuint height = 128) : PrecomputedRender{ width, height } {}
+    SpecularPrefilterIBL(GLuint width = 128, GLuint height = 128) : PrecomputedRender{ width, height } {}
     virtual void execute(GLuint cube_texture) override
     {
         _result = TEXTURE_MANAGER.generate_cube_texture_buffer(_width, _height, TEXTURE_CUBE_PREFILTER);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cube_texture);        
-        glViewport(0, 0, _width, _height);
+        _sp.use(); 
         _fb.bind();
-        _sp.use();
         _sp.set_sampler(0, "environmentMap");
         _sp.set_uniform("projection", capture_projection);
-        _sp.active_sampler(0, cube_texture);
+        _sp.active_sampler(0, cube_texture, GL_TEXTURE_CUBE_MAP);  
         GLuint maxMipLevels = 5;
         for (GLuint mip = 0; mip < maxMipLevels; ++mip)
         {
@@ -144,9 +141,9 @@ class BRDF_LUT : public PrecomputedRender
     ShaderProgram _sp{"../glsl/ibl/brdf.vs", "../glsl/ibl/brdf.fs"};
 public:
     BRDF_LUT(GLuint width = 512, GLuint height = 512) : PrecomputedRender{ width, height } {}    
-    virtual void execute(GLuint cube_texture = 0) override
+    virtual void execute(GLuint texture = 0) override
     {
-        (void)cube_texture;
+        (void)texture;
         _result = TEXTURE_MANAGER.generate_texture_buffer(_width, _height, TEXTURE_2D_BRDF);       
         _fb.bind();
         _fb.create_render_object(_width, _height);

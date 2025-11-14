@@ -10,6 +10,8 @@
 #include "PrecomputedRender.hpp"
 #include "SkyboxRender.hpp"
 
+#include "Material.hpp"
+
 
 // renderQuad() renders a 1x1 XY quad in NDC
 // -----------------------------------------
@@ -56,6 +58,8 @@ class IBLWidget : public GLWidget
     DiffuseIrradianceIBL di_pass;    
     BRDF_LUT budf_lut;
 
+    SpecularPrefilterIBL prefilter;
+
     SkyboxRender _sky;
 
     GLuint hdrTexture;
@@ -66,6 +70,14 @@ class IBLWidget : public GLWidget
     GLuint rusted_iron_roughness = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/rusted_iron/roughness.png");
     GLuint rusted_iron_ao = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/rusted_iron/ao.png");    
 
+    GLuint gold_albedo = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/gold/albedo.png");
+    GLuint gold_normal = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/gold/normal.png");
+    GLuint gold_metallic = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/gold/metallic.png");
+    GLuint gold_roughness = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/gold/roughness.png");
+    GLuint gold_ao = TEXTURE_MANAGER.auto_load_texture("../resources/textures/pbr/gold/ao.png");        
+
+    Material rusted_iron{"../resources/textures/pbr/gold"};
+    // Material rusted_iron{"../resources/textures/pbr/rusted_iron"};
 
     FrameBuffer captureFBO;
     unsigned int captureRBO;
@@ -174,6 +186,8 @@ class IBLWidget : public GLWidget
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, hdr_pass);
 
+        prefilter.execute(hdr_pass);
+
         glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
         unsigned int maxMipLevels = 5;
         for (unsigned int mip = 0; mip < maxMipLevels; ++mip)
@@ -234,21 +248,35 @@ class IBLWidget : public GLWidget
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, di_pass);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, prefilter);
+        // glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, budf_lut);
 
         // rusted iron
+        // glActiveTexture(GL_TEXTURE3);
+        // glBindTexture(GL_TEXTURE_2D, rusted_iron_albedo);
+        // glActiveTexture(GL_TEXTURE4);
+        // glBindTexture(GL_TEXTURE_2D, rusted_iron_normal);
+        // glActiveTexture(GL_TEXTURE5);
+        // glBindTexture(GL_TEXTURE_2D, rusted_iron_metallic);
+        // glActiveTexture(GL_TEXTURE6);
+        // glBindTexture(GL_TEXTURE_2D, rusted_iron_roughness);
+        // glActiveTexture(GL_TEXTURE7);
+        // glBindTexture(GL_TEXTURE_2D, rusted_iron_ao);
+
+        // rusted_iron.active(3);        
+
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, rusted_iron_albedo);
+        glBindTexture(GL_TEXTURE_2D, gold_albedo);
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, rusted_iron_normal);
+        glBindTexture(GL_TEXTURE_2D, gold_normal);
         glActiveTexture(GL_TEXTURE5);
-        glBindTexture(GL_TEXTURE_2D, rusted_iron_metallic);
+        glBindTexture(GL_TEXTURE_2D, gold_metallic);
         glActiveTexture(GL_TEXTURE6);
-        glBindTexture(GL_TEXTURE_2D, rusted_iron_roughness);
+        glBindTexture(GL_TEXTURE_2D, gold_roughness);
         glActiveTexture(GL_TEXTURE7);
-        glBindTexture(GL_TEXTURE_2D, rusted_iron_ao);
+        glBindTexture(GL_TEXTURE_2D, gold_ao);        
 
         model = glm::mat4(1.0f);
         pbrShader.set_uniform("model", model);
@@ -275,8 +303,9 @@ class IBLWidget : public GLWidget
             Shape::render_sphere();
         }
 
-        // _sky.render_texture(hdr_pass, get_projection());
-        _sky.render_texture(prefilterMap, get_projection());
+        _sky.render_texture(hdr_pass, get_projection());
+        // _sky.render_texture(prefilterMap, get_projection());
+        _sky.render_texture(prefilter, get_projection());
 
     }   
 
