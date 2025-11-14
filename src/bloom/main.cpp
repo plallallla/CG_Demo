@@ -11,6 +11,8 @@
 #include <string>
 #include <xlocale/_stdio.h>
 
+#include "PostRender.hpp"
+
 class BloomWidget : public GLWidget
 {
 public:

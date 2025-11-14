@@ -14,6 +14,8 @@
 
 #include "QuadRender.hpp"
 
+#include "PostRender.hpp"
+
 class MoedlWidget : public GLWidget
 {
 public:
@@ -30,6 +32,8 @@ private:
     GLuint f2{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_RGB)};
 
     QuadRender _debug;
+    PostRender __debug;
+
 
     virtual void application()
     {
@@ -56,7 +60,10 @@ private:
         ourModel.render_elements(sp1);
         frame.unbind();
 
-        _debug.render_texture(f1);
+        // _debug.render_texture(f1);
+        __debug.render_texture(f1);
+
+
 
     }
 };
