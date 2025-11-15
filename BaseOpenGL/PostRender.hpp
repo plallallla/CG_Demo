@@ -5,9 +5,19 @@ class PostRender
 {
     static std::string default_vs_src;
     static std::string default_fs_src;
+    inline static void bind_empty_va()
+    {
+        static GLuint va = [] () -> GLuint
+        {
+            GLuint vao;
+            glGenVertexArrays(1, &vao);
+            glBindVertexArray(vao);
+            return vao;
+        }();
+        glBindVertexArray(va);
+    }
 public:
     ShaderProgram _sp;
-    GLuint va;
     PostRender(std::string_view fs_path)
     {
         _sp.load_vs_src(default_vs_src);
@@ -22,10 +32,9 @@ public:
     }
     void render_texture(GLuint texture)
     {
-        if (!va) glGenVertexArrays(1, &va);
-        glBindVertexArray(va);
         glDisable(GL_DEPTH_TEST);
         glClear(GL_COLOR_BUFFER_BIT);
+        bind_empty_va();
         _sp.use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
@@ -33,8 +42,9 @@ public:
     }
     void render_texture(const std::vector<GLuint>& textures)
     {
-        if (!va) glGenVertexArrays(1, &va);
-        glBindVertexArray(va);
+        glDisable(GL_DEPTH_TEST);
+        glClear(GL_COLOR_BUFFER_BIT);
+        bind_empty_va();
         _sp.use();
         for (int i = 0; i < textures.size(); i++)
         {
