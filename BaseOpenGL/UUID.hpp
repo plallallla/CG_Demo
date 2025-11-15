@@ -2,17 +2,12 @@
 
 template <typename T> class UUID
 {
-  public:
-    UUID() : _uuid(_ct++)
-    {
-    }
+public:
+  UUID() : _uuid(_ct++) {}
 
-    inline int get() const
-    {
-        return _uuid;
-    }
+  inline int get() const { return _uuid; }
 
-  private:
+private:
     int _uuid = -1;
     static int _ct;
 };

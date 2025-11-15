@@ -7,7 +7,7 @@
 #include <OpenGL/gltypes.h>
 #include <vector>
 
-#include "PrecomputedRender.hpp"
+#include "Precompution.hpp"
 #include "SkyboxRender.hpp"
 
 #include "Material.hpp"
