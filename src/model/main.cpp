@@ -26,6 +26,9 @@ private:
     Model ourModel{"../resources/backpack/backpack.obj"};
     Model cyborg{"../resources/cyborg/cyborg.obj"};
 
+    GLuint _wood_texture{TEXTURE_MANAGER.load_texture("../resources/textures/wood.png", TEXTURE_2D_GAMMA)};
+    
+
     FrameBuffer frame{};
 
     GLuint f1{TEXTURE_MANAGER.generate_texture_buffer(800*2, 600*2, TEXTURE_2D_RGB)};
@@ -61,7 +64,8 @@ private:
         frame.unbind();
 
         // _debug.render_texture(f1);
-        __debug.render_texture(f1);
+        // __debug.render_texture(_wood_texture);
+        _debug.render_texture(_wood_texture);
 
 
 

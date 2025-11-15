@@ -66,6 +66,6 @@ in vec2 uv;
 uniform sampler2D screenTexture;
 void main()
 {
-    FragColor = vec4(texture(screenTexture, uv/ 2.0).rgb, 1.0);
+    FragColor = vec4(texture(screenTexture, uv).rgb, 1.0);
 } 
 )";
